@@ -1,17 +1,27 @@
 /**
  * Contact form handler — POST /api/contact
  *
- * Delivers website enquiries by email. Uses Resend's HTTP API so the function
- * has no dependencies at all; Node's global fetch does the work.
+ * Delivers website enquiries by email. Two delivery paths are supported so the
+ * site can reuse whichever mail setup is already in place:
+ *
+ *   1. Resend HTTP API  — used when RESEND_API_KEY is set. No dependencies.
+ *   2. SMTP             — used when SMTP_HOST/SMTP_USER/SMTP_PASS are set,
+ *                         matching the backend's existing Gmail configuration.
  *
  * Environment variables:
- *   RESEND_API_KEY   required — enables delivery. Without it the endpoint
- *                    returns 503 instead of pretending the message was sent.
+ *   RESEND_API_KEY   enables delivery via Resend
+ *   SMTP_HOST        e.g. smtp.gmail.com
+ *   SMTP_PORT        e.g. 465 (default 465; 587 switches to STARTTLS)
+ *   SMTP_SECURE      "true" for implicit TLS on 465 (default true)
+ *   SMTP_USER        the sending mailbox
+ *   SMTP_PASS        the mailbox password or app password
  *   CONTACT_TO       where enquiries are delivered (default hello@coopvest.africa)
- *   CONTACT_FROM     verified sender, e.g. "Coopvest Website <noreply@coopvest.africa>"
- *                    (default noreply@coopvest.africa)
- *   CONTACT_REPLY_TO optional Reply-To (default: the sender's own address)
+ *   CONTACT_FROM     sender, e.g. "Coopvest Website <noreply@coopvest.africa>"
+ *   CONTACT_REPLY_TO optional Reply-To (default: the enquirer's own address)
  *   ALLOWED_ORIGINS  optional comma-separated extra origins allowed to post
+ *
+ * If no provider is configured the endpoint returns 503 rather than telling the
+ * visitor their message was sent when it was not.
  *
  * The form is public, so the handler is deliberately defensive: it validates and
  * length-caps every field, ignores the honeypot, rate-limits per client, and
@@ -110,6 +120,67 @@ function badRequest(res, errors) {
   return res.status(400).json({ ok: false, error: 'validation_failed', errors });
 }
 
+function fromHeader() {
+  return process.env.CONTACT_FROM || 'Coopvest Website <noreply@coopvest.africa>';
+}
+
+/** Which delivery path is configured, if any. */
+function provider() {
+  if (process.env.RESEND_API_KEY) return 'resend';
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) return 'smtp';
+  return null;
+}
+
+async function deliverViaResend({ to, replyTo, subject, text, html }) {
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromHeader(),
+      to: [to],
+      reply_to: replyTo,
+      subject,
+      text,
+      html,
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`resend ${response.status} ${detail.slice(0, 300)}`);
+  }
+}
+
+async function deliverViaSmtp({ to, replyTo, subject, text, html }) {
+  // Imported lazily so the module loads (and the Resend path works) even in an
+  // environment where nodemailer is not installed.
+  const nodemailer = await import('nodemailer');
+
+  const port = Number(process.env.SMTP_PORT || 465);
+  const transporter = nodemailer.default.createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    // 465 is implicit TLS; 587 upgrades with STARTTLS.
+    secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : port === 465,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: fromHeader(),
+    to,
+    replyTo,
+    subject,
+    text,
+    html,
+  });
+}
+
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
 
@@ -163,13 +234,13 @@ export default async function handler(req, res) {
 
   if (Object.keys(errors).length) return badRequest(res, errors);
 
-  const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_TO || 'hello@coopvest.africa';
-  const from = process.env.CONTACT_FROM || 'Coopvest Website <noreply@coopvest.africa>';
+  const replyTo = process.env.CONTACT_REPLY_TO || email;
+  const via = provider();
 
-  if (!apiKey) {
+  if (!via) {
     // Fail loudly rather than telling the visitor their message was sent.
-    console.error('contact: RESEND_API_KEY is not configured; enquiry not delivered');
+    console.error('contact: no mail provider configured (set RESEND_API_KEY or SMTP_*)');
     return res.status(503).json({
       ok: false,
       error: 'email_not_configured',
@@ -178,6 +249,7 @@ export default async function handler(req, res) {
     });
   }
 
+  const subject = `[Website] ${topic} — ${name}`;
   const text = [
     'New enquiry from the Coopvest Africa website',
     '',
@@ -203,38 +275,20 @@ export default async function handler(req, res) {
   `;
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        reply_to: process.env.CONTACT_REPLY_TO || email,
-        subject: `[Website] ${topic} — ${name}`,
-        text,
-        html,
-      }),
-    });
-
-    if (!response.ok) {
-      // Log the detail for operators; never return it to the visitor.
-      const detail = await response.text().catch(() => '');
-      console.error('contact: delivery failed', response.status, detail.slice(0, 500));
-      return res.status(502).json({
-        ok: false,
-        error: 'delivery_failed',
-        message: 'We could not send your message just now. Please email hello@coopvest.africa directly.',
-      });
+    const payload = { to, replyTo, subject, text, html };
+    if (via === 'resend') {
+      await deliverViaResend(payload);
+    } else {
+      await deliverViaSmtp(payload);
     }
   } catch (err) {
-    console.error('contact: delivery error', err && err.message);
+    // Log for operators; never return provider detail to the visitor.
+    console.error(`contact: delivery via ${via} failed:`, err && err.message);
     return res.status(502).json({
       ok: false,
       error: 'delivery_failed',
-      message: 'We could not send your message just now. Please email hello@coopvest.africa directly.',
+      message:
+        'We could not send your message just now. Please email hello@coopvest.africa directly.',
     });
   }
 

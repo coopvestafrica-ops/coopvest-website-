@@ -74,19 +74,34 @@ python3 tools/make_logo_assets.py
 ## The contact form
 
 The form on `/contact/` posts JSON to `/api/contact`, a serverless function
-(`api/contact.js`) that emails the enquiry via the Resend HTTP API. It has no
-dependencies — Node's built-in `fetch` does the work.
+(`api/contact.js`) that emails the enquiry. Two delivery paths are supported, so
+the site can reuse whichever mail setup is already in place:
+
+1. **Resend HTTP API** — used when `RESEND_API_KEY` is set. No dependency; Node's
+   built-in `fetch` does the work.
+2. **SMTP** — used when `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS` are set, matching the
+   Gmail configuration the backend already uses. This path needs `nodemailer`,
+   which is listed in `package.json` so Vercel installs it.
 
 Set these environment variables in the Vercel project (Settings → Environment
-Variables):
+Variables). **Either** provider works; Resend is preferred, SMTP reuses the
+Gmail configuration already used by the backend.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `RESEND_API_KEY` | yes | Enables delivery. Without it the endpoint returns **503** rather than telling a visitor their message was sent when it was not. |
+| `RESEND_API_KEY` | one of these | Enables delivery through Resend. |
+| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | one of these | Enables delivery by SMTP, e.g. `smtp.gmail.com` with a Gmail app password. |
+| `SMTP_PORT` | no | Default `465` (implicit TLS). `587` switches to STARTTLS. |
+| `SMTP_SECURE` | no | `true`/`false`. Defaults to true on port 465. |
 | `CONTACT_TO` | no | Where enquiries are delivered (default `hello@coopvest.africa`). |
-| `CONTACT_FROM` | no | Verified sender, e.g. `Coopvest Website <noreply@coopvest.africa>`. The domain must be verified in Resend. |
+| `CONTACT_FROM` | no | Sender, e.g. `Coopvest Website <noreply@coopvest.africa>`. |
 | `CONTACT_REPLY_TO` | no | Overrides Reply-To (default is the enquirer's own address). |
 | `ALLOWED_ORIGINS` | no | Extra origins permitted to post, comma-separated. |
+
+A Resend key must have a verified sending domain; a Gmail app password is
+required if SMTP is used (a normal account password will be rejected). If
+**no** provider is configured the endpoint returns 503 rather than reporting a
+false success.
 
 The handler validates and length-caps every field, rejects a disallowed
 `Origin`, rate-limits to 5 submissions per IP per 10 minutes, discards a

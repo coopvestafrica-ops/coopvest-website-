@@ -1,12 +1,14 @@
 // Local smoke test for the contact handler. Not part of the deployment.
-// Copies api/contact.js to .mjs so it can be imported without a package.json,
-// then drives it with stub req/res objects.
-import { readFileSync, writeFileSync } from "node:fs";
+// Copies api/contact.js to .mjs so it can be imported without a package.json
+// rewrite, then drives it with stub req/res objects.
+import { readFileSync, writeFileSync, rmSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
-const src = readFileSync("/workspace/project/api/contact.js", "utf8");
-writeFileSync("/tmp/contact_under_test.mjs", src);
-const { default: handler } = await import(pathToFileURL("/tmp/contact_under_test.mjs").href);
+// The copy must live inside the project so bare imports such as `nodemailer`
+// resolve against node_modules.
+const TMP = new URL("./.contact_under_test.mjs", import.meta.url);
+writeFileSync(TMP, readFileSync(new URL("../api/contact.js", import.meta.url), "utf8"));
+const { default: handler } = await import(pathToFileURL(TMP.pathname).href);
 
 function makeRes() {
   const res = {
@@ -92,7 +94,7 @@ r = await call({ ...valid, name: "Ada\r\nBcc: victim@example.com" }, { ip: "9.9.
 check("header injection is neutralised (no 200 success, no crash)",
   r.statusCode === 503 || r.statusCode === 400, r.body);
 
-// 9. With a key set, delivery is attempted against Resend (stubbed fetch)
+// 9. With a Resend key set, delivery is attempted against Resend (stubbed fetch)
 process.env.RESEND_API_KEY = "test_key";
 let captured = null;
 globalThis.fetch = async (url, init) => {
@@ -114,5 +116,60 @@ check("upstream failure -> 502 delivery_failed", r.statusCode === 502 && r.body.
 check("provider detail is not leaked to the visitor",
   !JSON.stringify(r.body).includes("domain not verified"), r.body);
 
+// 11. SMTP path. nodemailer is installed, so stub its transport to confirm the
+//     envelope we build is correct without opening a socket.
+delete process.env.RESEND_API_KEY;
+process.env.SMTP_HOST = "smtp.gmail.com";
+process.env.SMTP_USER = "sender@example.com";
+process.env.SMTP_PASS = "app-password";
+
+const nodemailer = await import("nodemailer");
+let smtpCall = null;
+let smtpOptions = null;
+nodemailer.default.createTransport = (options) => {
+  smtpOptions = options;
+  return {
+    sendMail: async (message) => {
+      smtpCall = message;
+      return { messageId: "stub" };
+    },
+  };
+};
+
+r = await call(valid, { ip: "9.9.9.8" });
+check("SMTP path delivers -> 200", r.statusCode === 200 && r.body.ok === true, r.body);
+check("SMTP transport uses the configured host and TLS on 465",
+  smtpOptions && smtpOptions.host === "smtp.gmail.com" && smtpOptions.port === 465
+    && smtpOptions.secure === true, smtpOptions);
+check("SMTP message carries the enquiry and returns to the sender",
+  smtpCall && smtpCall.to === "hello@coopvest.africa"
+    && smtpCall.replyTo === "ada@example.com"
+    && smtpCall.subject.includes("Ada Okonkwo")
+    && smtpCall.text.includes("enrol my staff"), smtpCall && smtpCall.subject);
+
+// 12. Port 587 switches to STARTTLS rather than implicit TLS
+process.env.SMTP_PORT = "587";
+r = await call(valid, { ip: "9.9.9.10" });
+check("SMTP port 587 uses STARTTLS", smtpOptions && smtpOptions.port === 587
+  && smtpOptions.secure === false, smtpOptions);
+
+// 13. An SMTP failure is reported without leaking credentials
+nodemailer.default.createTransport = () => ({
+  sendMail: async () => { throw new Error("535-5.7.8 Username and Password not accepted"); },
+});
+r = await call(valid, { ip: "9.9.9.11" });
+check("SMTP failure -> 502 without leaking the password or host",
+  r.statusCode === 502 && !JSON.stringify(r.body).includes("app-password")
+    && !JSON.stringify(r.body).includes("smtp.gmail.com")
+    && !JSON.stringify(r.body).includes("Username and Password not accepted"), r.body);
+
+// 14. SMTP env is ignored when incomplete, so we still refuse cleanly
+delete process.env.SMTP_PASS;
+delete process.env.SMTP_PORT;
+r = await call(valid, { ip: "9.9.9.9" });
+check("incomplete SMTP config -> 503 email_not_configured",
+  r.statusCode === 503 && r.body.error === "email_not_configured", { code: r.statusCode, body: r.body });
+
+rmSync(TMP, { force: true });
 console.log(failures === 0 ? "\nAll checks passed." : `\n${failures} check(s) failed.`);
 process.exit(failures === 0 ? 0 : 1);
