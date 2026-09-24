@@ -1,0 +1,9 @@
+# Python bytecode from the build and asset scripts
+__pycache__/
+*.pyc
+
+# Local editor / OS noise
+.DS_Store
+.vercel/
+.idea/
+.vscode/
