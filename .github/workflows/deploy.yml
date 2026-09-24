@@ -57,13 +57,30 @@ jobs:
           sleep 2
           python3 tools/check_links.py
 
+  # Job-level `if` may only read the github/needs/vars/inputs contexts, so the
+  # presence of the Vercel token is detected here and consumed via `needs`.
+  detect:
+    name: Check deployment credentials
+    runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        env:
+          TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::VERCEL_TOKEN is not set; skipping deployment. The verify job above still ran."
+          fi
+
   deploy:
     name: ${{ github.event_name == 'pull_request' && 'Preview' || 'Production' }} deploy
     runs-on: ubuntu-latest
-    needs: verify
-    # Skipped (not failed) when the Vercel secrets are absent, so a repository
-    # that has not been connected to Vercel still shows green on the verify job.
-    if: ${{ secrets.VERCEL_TOKEN != '' }}
+    needs: [verify, detect]
+    if: needs.detect.outputs.configured == 'true'
     steps:
       - uses: actions/checkout@v4
 
