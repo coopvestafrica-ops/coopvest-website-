@@ -5,32 +5,54 @@
    ========================================================================== */
 
 :root {
-  /* Brand */
-  --brand-600: #2563eb;
-  --brand-700: #1d4ed8;
-  --brand-800: #1e40af;
-  --accent-600: #4f46e5;
-  --accent-700: #4338ca;
+  /* Brand — mirrors the app's CoopvestColors (lib/config/theme_config.dart) so
+     the website and the member app read as one product. Emerald primary, gold
+     accent. The app reserves gold for exactly one primary action per screen, so
+     it is used here for a single call to action per page and nothing else. */
+  --brand-600: #1b5e20;      /* primary — header, links, active nav */
+  --brand-700: #0f3d14;      /* primaryDark — hover/pressed */
+  --brand-800: #0b2f10;
+  --brand-light: #2e7d32;    /* primaryLight — savings tint */
+  --brand-500: #16a34a;      /* tertiary */
+  --accent-600: #f2b705;     /* accent — gold, one action per screen */
+  --accent-700: #dba400;     /* accentPressed */
+  --accent-ink: #3d2e00;     /* onAccent — dark text on gold (7.27:1) */
+  --accent-icon: #8a6300;    /* gold icon/text on white (5.43:1) */
 
   /* Surfaces */
-  --bg: #f8fafc;
+  --bg: #f5f7f6;             /* pageBackground — green-tinted off-white */
   --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --surface-2: #eef3f0;      /* faint green wash for tinted sections */
+  --border: #e3eae6;         /* cardBorder */
+  --border-strong: #cbd8d1;
 
   /* Text */
-  --ink: #1e293b;
-  --ink-muted: #64748b;
-  --ink-soft: #94a3b8;
+  --ink: #101b16;            /* textPrimary */
+  --ink-muted: #5c6b64;      /* textSecondary */
+  --ink-soft: #66756d;       /* textHint */
 
-  /* Status */
-  --success: #059669;
-  --success-bg: #ecfdf5;
+  /* Status — fill values from the app, with the darker *Text variants used on
+     white because #16a34a (3.30:1) and #d97706 (3.19:1) fail AA as body text. */
+  --success: #16a34a;
+  --success-text: #15803d;   /* 5.02:1 on white */
+  --success-bg: #dcfce7;
   --warning: #d97706;
-  --warning-bg: #fffbeb;
+  --warning-text: #b45309;   /* 5.02:1 on white */
+  --warning-bg: #fef3c7;
   --danger: #dc2626;
-  --danger-bg: #fef2f2;
+  --danger-text: #b91c1c;    /* 6.47:1 on white */
+  --danger-bg: #fee2e2;
+
+  /* Dark surfaces, from the app's dark palette so dark still reads as Coopvest
+     rather than generic grey. darkPrimary is the lifted green that passes AA on
+     a dark background. */
+  --dark-bg: #0f1311;
+  --dark-surface: #1a211d;
+  --dark-surface-2: #222b26;
+  --dark-text: #f2f5f3;
+  --dark-text-muted: #a9b5af;
+  --dark-divider: #2e3934;
+  --dark-primary: #6fcf87;
 
   /* Type */
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -153,12 +175,12 @@ ul, ol { padding-left: 1.25rem; }
 .section--tint { background: var(--surface-2); }
 
 .section--ink {
-  background: linear-gradient(160deg, #0f1c3f 0%, #1e293b 55%, #172554 100%);
-  color: #e2e8f0;
+  background: linear-gradient(160deg, var(--dark-bg) 0%, var(--dark-surface) 55%, #123024 100%);
+  color: var(--dark-text);
 }
 .section--ink h2,
 .section--ink h3 { color: #ffffff; }
-.section--ink p { color: #cbd5e1; }
+.section--ink p { color: var(--dark-text-muted); }
 
 .section-head { max-width: 62ch; margin-bottom: var(--sp-6); }
 .section-head--center { margin-inline: auto; text-align: center; }
@@ -173,7 +195,7 @@ ul, ol { padding-left: 1.25rem; }
   color: var(--brand-700);
   margin-bottom: var(--sp-3);
 }
-.section--ink .eyebrow { color: #93c5fd; }
+.section--ink .eyebrow { color: var(--dark-primary); }
 
 .grid { display: grid; gap: var(--sp-5); }
 .grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -220,14 +242,17 @@ ul, ol { padding-left: 1.25rem; }
 .btn--primary {
   background: var(--brand-600);
   color: #fff;
-  box-shadow: 0 10px 24px -12px rgba(37, 99, 235, 0.7);
+  box-shadow: 0 10px 24px -14px rgba(27, 94, 32, 0.8);
 }
 .btn--primary:hover { background: var(--brand-700); }
 
+/* Gold is the app's single-accent colour: white on gold is only 1.82:1, so the
+   label is the app's dark `onAccent` rather than white. Used for one primary
+   call to action per page, as in the app. */
 .btn--accent {
   background: var(--accent-600);
-  color: #fff;
-  box-shadow: 0 10px 24px -12px rgba(79, 70, 229, 0.7);
+  color: var(--accent-ink);
+  box-shadow: 0 10px 24px -14px rgba(242, 183, 5, 0.85);
 }
 .btn--accent:hover { background: var(--accent-700); }
 
@@ -266,7 +291,7 @@ ul, ol { padding-left: 1.25rem; }
   justify-content: center;
   width: 44px; height: 44px;
   border-radius: var(--radius-sm);
-  background: #eff6ff;
+  background: #e3f1eb;
   color: var(--brand-700);
   margin-bottom: var(--sp-4);
 }
@@ -281,15 +306,15 @@ ul, ol { padding-left: 1.25rem; }
   box-shadow: none;
 }
 .section--ink .card p,
-.section--ink .card li { color: #cbd5e1; }
-.section--ink .card__icon { background: rgba(147, 197, 253, 0.16); color: #bfdbfe; }
+.section--ink .card li { color: var(--dark-text-muted); }
+.section--ink .card__icon { background: rgba(111, 207, 135, 0.18); color: #a5d6a7; }
 
 /* ----------------------------------------------------------------- hero -- */
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(155deg, #0f1c3f 0%, #1e293b 52%, #1e3a8a 100%);
-  color: #e2e8f0;
+  background: linear-gradient(155deg, var(--dark-bg) 0%, var(--dark-surface) 52%, #123024 100%);
+  color: var(--dark-text);
   padding-block: var(--sp-9) var(--sp-8);
 }
 .hero::after {
@@ -297,7 +322,7 @@ ul, ol { padding-left: 1.25rem; }
   position: absolute;
   inset: auto -12% -46% auto;
   width: 620px; height: 620px;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.42), transparent 62%);
+  background: radial-gradient(circle, rgba(111, 207, 135, 0.28), transparent 62%);
   pointer-events: none;
 }
 .hero__inner {
@@ -311,16 +336,16 @@ ul, ol { padding-left: 1.25rem; }
 .hero h1 { color: #fff; margin-bottom: var(--sp-4); }
 .hero__lead {
   font-size: var(--step-2);
-  color: #cbd5e1;
+  color: var(--dark-text-muted);
   margin-bottom: var(--sp-3);
   max-width: 46ch;
 }
 .hero__sub {
-  color: #94a3b8;
+  color: var(--dark-text-muted);
   max-width: 56ch;
   margin-bottom: var(--sp-6);
 }
-.hero .eyebrow { color: #93c5fd; }
+.hero .eyebrow { color: var(--dark-primary); }
 
 .hero__panel {
   background: rgba(255, 255, 255, 0.06);
@@ -339,16 +364,16 @@ ul, ol { padding-left: 1.25rem; }
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 .hero__stat:last-child { border-bottom: 0; }
-.hero__stat dt { color: #cbd5e1; font-size: var(--step--1); }
+.hero__stat dt { color: var(--dark-text-muted); font-size: var(--step--1); }
 .hero__stat dd { color: #fff; font-weight: 700; text-align: right; }
 
 .page-hero {
-  background: linear-gradient(150deg, #0f1c3f 0%, #1e293b 60%, #1e3a8a 100%);
-  color: #e2e8f0;
+  background: linear-gradient(150deg, var(--dark-bg) 0%, var(--dark-surface) 60%, #123024 100%);
+  color: var(--dark-text);
   padding-block: var(--sp-8) var(--sp-7);
 }
 .page-hero h1 { color: #fff; margin-bottom: var(--sp-3); }
-.page-hero p { color: #cbd5e1; font-size: var(--step-1); max-width: 62ch; }
+.page-hero p { color: var(--dark-text-muted); font-size: var(--step-1); max-width: 62ch; }
 
 @media (max-width: 900px) {
   .hero__inner { grid-template-columns: 1fr; }
@@ -394,7 +419,7 @@ ul, ol { padding-left: 1.25rem; }
   white-space: nowrap;
 }
 .nav a:hover { background: var(--surface-2); text-decoration: none; }
-.nav a[aria-current="page"] { color: var(--brand-700); background: #eff6ff; font-weight: 600; }
+.nav a[aria-current="page"] { color: var(--brand-700); background: #e3f1eb; font-weight: 600; }
 
 .header__actions { display: flex; align-items: center; gap: var(--sp-3); }
 
@@ -512,9 +537,9 @@ tbody tr:last-child td { border-bottom: 0; }
   color: var(--ink);
   border: 1px solid var(--border);
 }
-.badge--success { background: var(--success-bg); color: #047857; border-color: #a7f3d0; }
+.badge--success { background: var(--success-bg); color: #15803d; border-color: #a7f3d0; }
 .badge--warning { background: var(--warning-bg); color: #b45309; border-color: #fde68a; }
-.badge--brand { background: #eff6ff; color: var(--brand-700); border-color: #bfdbfe; }
+.badge--brand { background: #e3f1eb; color: var(--brand-700); border-color: #a5d6a7; }
 
 /* ------------------------------------------------------------ faq/acc --- */
 .faq { display: grid; gap: var(--sp-3); }
@@ -550,7 +575,7 @@ tbody tr:last-child td { border-bottom: 0; }
 
 /* ---------------------------------------------------------------- cta --- */
 .cta-band {
-  background: linear-gradient(135deg, var(--brand-700), var(--accent-600));
+  background: linear-gradient(135deg, var(--brand-700), #15653a);
   color: #fff;
   border-radius: var(--radius-lg);
   padding: var(--sp-7);
@@ -583,7 +608,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .field select:focus,
 .field textarea:focus {
   border-color: var(--brand-600);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+  box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.18);
   outline: none;
 }
 .field input[aria-invalid="true"],
@@ -629,7 +654,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .breadcrumb { font-size: var(--step--1); color: var(--ink-muted); margin-bottom: var(--sp-4); }
 .breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-2); padding: 0; }
 .breadcrumb li + li::before { content: "/"; margin-right: var(--sp-2); color: var(--ink-soft); }
-.page-hero .breadcrumb, .page-hero .breadcrumb a { color: #bfdbfe; }
+.page-hero .breadcrumb, .page-hero .breadcrumb a { color: #a5d6a7; }
 .page-hero .breadcrumb li + li::before { color: rgba(191, 219, 254, 0.6); }
 
 .contact-card { display: grid; gap: var(--sp-2); }
@@ -640,9 +665,9 @@ tbody tr:last-child td { border-bottom: 0; }
 @media (max-width: 620px) { .stat-row { grid-template-columns: 1fr; } }
 .stat { text-align: center; padding: var(--sp-5); }
 .stat__num { font-size: var(--step-3); font-weight: 700; color: var(--brand-700); }
-.section--ink .stat__num { color: #93c5fd; }
+.section--ink .stat__num { color: var(--dark-primary); }
 .stat__label { color: var(--ink-muted); font-size: var(--step--1); }
-.section--ink .stat__label { color: #cbd5e1; }
+.section--ink .stat__label { color: var(--dark-text-muted); }
 
 .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
 .reveal.is-visible { opacity: 1; transform: none; }
@@ -651,7 +676,7 @@ tbody tr:last-child td { border-bottom: 0; }
 }
 
 /* -------------------------------------------------------------- footer -- */
-.site-footer { background: #0f172a; color: #cbd5e1; padding-block: var(--sp-7) var(--sp-5); }
+.site-footer { background: #0f1311; color: var(--dark-text-muted); padding-block: var(--sp-7) var(--sp-5); }
 .footer__grid {
   display: grid;
   grid-template-columns: 1.5fr repeat(3, 1fr);
@@ -663,9 +688,9 @@ tbody tr:last-child td { border-bottom: 0; }
 @media (max-width: 560px) { .footer__grid { grid-template-columns: 1fr; } }
 
 .site-footer h2 { font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.08em; color: #fff; margin-bottom: var(--sp-4); }
-.site-footer a { color: #cbd5e1; }
+.site-footer a { color: var(--dark-text-muted); }
 .site-footer a:hover { color: #fff; }
-.site-footer p { color: #94a3b8; font-size: 0.9375rem; }
+.site-footer p { color: var(--dark-text-muted); font-size: 0.9375rem; }
 .footer__links { list-style: none; padding: 0; display: grid; gap: var(--sp-2); font-size: 0.9375rem; }
 .footer__brand { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); }
 .footer__logo { height: 66px; width: auto; }
@@ -677,6 +702,6 @@ tbody tr:last-child td { border-bottom: 0; }
   gap: var(--sp-3);
   padding-top: var(--sp-5);
   font-size: var(--step--1);
-  color: #94a3b8;
+  color: var(--dark-text-muted);
 }
 .footer__bottom ul { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-4); padding: 0; }

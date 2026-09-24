@@ -15,3 +15,5 @@ node_modules/
 
 # Temp file written by the contact test
 .contact_under_test.mjs
+.vercel
+.env*

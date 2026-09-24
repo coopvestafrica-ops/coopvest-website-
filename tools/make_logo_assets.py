@@ -30,8 +30,12 @@ MARK = BRAND / "coopvest-mark.png"
 OUT = pathlib.Path("/workspace/project/assets/img")
 OUT.mkdir(parents=True, exist_ok=True)
 
-INK_900 = (15, 23, 42)
-ACCENT_600 = (79, 70, 229)
+# Brand colours for the generated card, matching assets/css/site.css and the
+# app's CoopvestColors: light mode darkens to the deep emerald, and the top-right
+# edge is the gold accent.
+INK_900 = (15, 19, 17)          # --dark-bg
+ACCENT_600 = (242, 183, 5)      # --accent-600 (gold)
+BRAND_600 = (27, 94, 32)        # --brand-600 (emerald)
 
 
 def white_to_alpha(image: Image.Image, threshold: int = 12) -> Image.Image:
@@ -66,18 +70,20 @@ def fit_height(image: Image.Image, height: int) -> Image.Image:
 
 
 def gradient(size: tuple[int, int]) -> Image.Image:
-    """Diagonal brand gradient, matching the site's headers."""
+    """Diagonal brand gradient, matching the site's dark sections and CTA band."""
     w, h = size
     base = Image.new("RGB", size, INK_900)
     draw = ImageDraw.Draw(base)
     for i in range(w + h):
         t = i / (w + h)
+        # Deep near-black emerald into the brand emerald: the same progression the
+        # site uses for its dark hero and page headers.
         draw.line(
             [(i, 0), (0, i)],
             fill=(
-                round(15 + t * (ACCENT_600[0] - 15)),
-                round(28 + t * (ACCENT_600[1] - 28)),
-                round(63 + t * (ACCENT_600[2] - 63)),
+                round(INK_900[0] + t * (BRAND_600[0] - INK_900[0])),
+                round(INK_900[1] + t * (BRAND_600[1] - INK_900[1])),
+                round(INK_900[2] + t * (BRAND_600[2] - INK_900[2])),
             ),
             width=1,
         )
@@ -186,10 +192,12 @@ def main() -> None:
 
     draw = ImageDraw.Draw(og)
     draw.text((80, 330), "Building Wealth Together.", font=load_font(66, True), fill=(255, 255, 255))
+    # Meet the app's dark-surface text tones: lifted green for the lead, muted
+    # light grey for the supporting line.
     draw.text((80, 420), "A smarter financial platform for salaried workers.",
-              font=load_font(34), fill=(191, 219, 254))
+              font=load_font(34), fill=(111, 207, 135))
     draw.text((80, 500), "Save consistently  ·  Access affordable financing  ·  Transparent records",
-              font=load_font(25), fill=(203, 213, 225))
+              font=load_font(25), fill=(169, 181, 175))
     og.convert("RGB").save(OUT / "og.png", optimize=True)
 
     # A JPEG version of the share card is what most crawlers prefer, and it is
