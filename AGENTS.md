@@ -57,22 +57,28 @@ update those alongside the CSS.
 
 ## Logo and icon assets
 
-`tools/make_logo_assets.py` derives every web asset from `assets/brand/`. The
-official square mark (`assets/brand/coopvest-mark.png`) is byte-identical to the
-mobile app's `assets/images/splash-logo-transparent.png`, which is why the icons
-and favicon are generated from it. Do not recolour the mark itself — it is
-shared app artwork.
+`tools/make_logo_assets.py` derives every logo and icon the site ships from
+`assets/brand/coopvest-mark.png` — there is one source image, not several. That
+mark is byte-identical to the mobile app's
+`assets/images/splash-logo-transparent.png` and to the copy uploaded under
+`download/`, so the header, footer, favicons, app icons, About page and social
+card all trace back to the same file. Do not recolour the mark — it is shared
+app artwork.
 
-The header lockup is cropped from that same PNG, not from
-`coopvest-lockup.jpg`. The mark stacks four bands — emblem, "COOPVEST AFRICA"
-wordmark, then two tagline lines — and the header takes the first two (y < 392),
-because the baked-in tagline is unreadable at header size and the shell already
-renders "Building Wealth Together" as live text. The JPEG scan is still the
-source for the `og.png` share card, where the tagline is large enough to read.
+The original `coopvest-lockup.jpg` scan is kept as supplied artwork but is no
+longer used for any output; its 96px render was visibly soft. If you need to
+re-derive anything, use the mark.
+
+The mark stacks four bands — emblem, "COOPVEST AFRICA" wordmark, then two
+tagline lines. The header/footer lockup takes the first two (y < 392), because
+the baked-in tagline is unreadable at header size and the shell already renders
+"Building Wealth Together" as live text. The `emblem` crop feeds `logo-mark.png`
+for external/partner use.
 
 If you change a logo's crop or dimensions, update the `width`/`height`
 attributes on the `<img>` tags in `build.py` — they are hardcoded and were left
 stale once already, which reserves the wrong aspect ratio before the image loads.
+The current lockup is 139x96.
 
 Both `tools/*.py` scripts originally hardcoded `/workspace/project` paths, which
 wrote outside the repo when run from a checkout. They now resolve paths relative

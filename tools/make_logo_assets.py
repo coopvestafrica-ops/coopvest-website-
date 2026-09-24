@@ -3,16 +3,20 @@
 
 Sources (committed alongside this script, so the build never reaches outside the
 repository):
-  assets/brand/coopvest-mark.png  the official square mark — used for the icon
-                                 set. This is the artwork supplied for the site
-                                 and is byte-identical to the app's splash logo.
-  assets/brand/coopvest-lockup.jpg  the full lockup (mark + wordmark) on white,
-                                 used for the header and social card.
+  assets/brand/coopvest-mark.png  the official square mark, and the single source
+                                 for every logo and icon the site ships. It is
+                                 byte-identical to the app's splash logo and to
+                                 the copy uploaded under download/, so the site,
+                                 the app and any printed use all trace back to
+                                 one file. White_transparent by design.
+  assets/brand/coopvest-lockup.jpg  the original scanned lockup. Retained as the
+                                 supplied artwork, but no longer used for output:
+                                 the mark above is the same logo at full quality.
 
 Outputs into assets/img:
-  logo.png / logo@2x.png          full lockup, transparent, for the header
-  logo-white.png                  full lockup as a light silhouette, for dark surfaces
-  logo-mark.png                   square emblem only, transparent
+  logo.png / logo@2x.png          lockup (emblem + wordmark), transparent, for the header
+  logo-white.png                  lockup as a light silhouette, for dark surfaces
+  logo-mark.png                   emblem only, transparent, for external/partner use
   favicon.ico, favicon-32.png     browser icon
   apple-touch-icon.png            iOS home-screen icon
   og.png / og.jpg                 social share card on the brand gradient
@@ -26,32 +30,12 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 BRAND = ROOT / "assets" / "brand"
-SRC = BRAND / "coopvest-lockup.jpg"
 MARK = BRAND / "coopvest-mark.png"
 OUT = ROOT / "assets" / "img"
 OUT.mkdir(parents=True, exist_ok=True)
 
 INK_900 = (15, 19, 17)          # app darkBackground
 GRADIENT_END = (15, 61, 20)     # app primaryDark — gradient terminates in brand green
-
-
-def white_to_alpha(image: Image.Image, threshold: int = 12) -> Image.Image:
-    """Convert a logo photographed on white into a transparent PNG.
-
-    Alpha is derived from how far each pixel sits from white, then the colour is
-    un-premultiplied so saturated brand colour is not washed out.
-    """
-    rgb = np.asarray(image.convert("RGB")).astype(np.float32)
-    alpha = 255.0 - rgb.min(axis=2)          # 255 where the pixel is pure white
-    alpha[alpha < threshold] = 0
-
-    safe = np.where(alpha > 0, alpha, 1.0)[..., None]
-    colour = np.clip((rgb - (255.0 - safe)) * 255.0 / safe, 0, 255)
-
-    result = Image.fromarray(
-        np.dstack([colour, np.clip(alpha, 0, 255)]).astype(np.uint8), "RGBA"
-    )
-    return result.crop(result.getchannel("A").getbbox())
 
 
 def silhouette(image: Image.Image, shade: tuple[int, int, int] = (255, 255, 255)) -> Image.Image:
@@ -99,9 +83,9 @@ def load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
 def quantise(image: Image.Image, colours: int = 256) -> Image.Image:
     """Palette-reduce an RGBA image without losing its alpha channel.
 
-    The source artwork is a JPEG, so a true-colour PNG of it runs to hundreds of
-    kilobytes. The logo is flat enough that a 256-colour palette is visually
-    identical at display size and roughly a tenth of the weight.
+    A true-colour PNG of the artwork runs to hundreds of kilobytes. The logo is
+    flat enough that a 256-colour palette is visually identical at display size
+    and roughly a tenth of the weight.
     """
     alpha = image.getchannel("A")
     rgb = image.convert("RGB").quantize(colors=colours, method=Image.MEDIANCUT, dither=Image.FLOYDSTEINBERG)
@@ -128,17 +112,11 @@ def save_optimised(image: Image.Image, path: pathlib.Path, colours: int = 256) -
 
 
 def main() -> None:
-    source = Image.open(SRC).convert("RGB")
-
-    # Regions measured from the artwork: full lockup and the emblem alone.
-    full = white_to_alpha(source.crop((110, 140, 905, 845)))
-    emblem = white_to_alpha(source.crop((315, 145, 465, 515)))
-
-    # The header lockup comes from the official transparent PNG mark rather than
-    # the JPEG scan, whose 96px render was visibly soft. The mark stacks four
-    # bands: the emblem, the "COOPVEST AFRICA" wordmark, then two tagline lines.
-    # The header wants the emblem and wordmark only — the baked-in tagline is far
-    # too small to read at header size and the shell renders it as live text.
+    # Every output derives from the official transparent PNG mark. The mark stacks
+    # four bands: the emblem, the "COOPVEST AFRICA" wordmark, then two tagline
+    # lines. The header/footer lockup wants the first two — the baked-in tagline
+    # is far too small to read at header size and the shell renders it as live
+    # text — while the share card has room for the whole thing.
     mark_full = Image.open(MARK).convert("RGBA")
     mark_trimmed = mark_full.crop(mark_full.getbbox())
 
@@ -146,6 +124,7 @@ def main() -> None:
         return image.crop(image.getchannel("A").getbbox())
 
     header_lockup = trim(mark_trimmed.crop((0, 0, mark_trimmed.width, 392)))
+    emblem = trim(mark_trimmed.crop((100, 0, 480, 295)))
 
     # The header renders the lockup about 34px tall, so 96px already exceeds the
     # 2x need. Shipping the 705px scan would cost ~700 KB for no visible gain.
@@ -188,22 +167,28 @@ def main() -> None:
         OUT.parent.parent / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)]
     )
 
-    # Social share card: brand gradient, the real lockup on a white panel, copy.
+    # Social share card: brand gradient, the lockup on a white panel, copy. The
+    # panel is sized from the artwork so the headline below can never collide
+    # with it — the positions are derived, not hand-tuned.
     og = gradient((1200, 630)).convert("RGBA")
-    logo_og = fit_height(full, 150)
-    panel = Image.new("RGBA", (logo_og.width + 80, logo_og.height + 60), (0, 0, 0, 0))
+    logo_og = fit_height(header_lockup, 150)
+    panel_pad = 40
+    panel = Image.new("RGBA", (logo_og.width + panel_pad * 2, logo_og.height + 60), (0, 0, 0, 0))
     ImageDraw.Draw(panel).rounded_rectangle(
         [0, 0, panel.width - 1, panel.height - 1], radius=24, fill=(255, 255, 255, 255)
     )
-    panel.alpha_composite(logo_og, (40, 30))
-    og.alpha_composite(panel, (80, 96))
+    panel.alpha_composite(logo_og, ((panel.width - logo_og.width) // 2,
+                                    (panel.height - logo_og.height) // 2))
+    panel_pos = (80, 80)
+    og.alpha_composite(panel, panel_pos)
 
+    text_y = panel_pos[1] + panel.height + 52
     draw = ImageDraw.Draw(og)
-    draw.text((80, 330), "Building Wealth Together.", font=load_font(66, True), fill=(255, 255, 255))
-    draw.text((80, 420), "A smarter financial platform for salaried workers.",
-              font=load_font(34), fill=(205, 229, 219))
-    draw.text((80, 500), "Save consistently  ·  Access affordable financing  ·  Transparent records",
-              font=load_font(25), fill=(169, 181, 175))
+    draw.text((80, text_y), "Building Wealth Together.", font=load_font(60, True), fill=(255, 255, 255))
+    draw.text((80, text_y + 82), "A smarter financial platform for salaried workers.",
+              font=load_font(32), fill=(205, 229, 219))
+    draw.text((80, text_y + 148), "Save consistently  ·  Access affordable financing  ·  Transparent records",
+              font=load_font(24), fill=(169, 181, 175))
     og.convert("RGB").save(OUT / "og.png", optimize=True)
 
     # A JPEG version of the share card is what most crawlers prefer, and it is
