@@ -12,8 +12,10 @@ without running this script at all.
 """
 from __future__ import annotations
 
+import hashlib
 import html
 import pathlib
+import re
 
 ROOT = pathlib.Path(__file__).parent
 PAGES_DIR = ROOT / "src" / "pages"
@@ -172,6 +174,39 @@ def parse_partial(text: str) -> tuple[dict[str, str], str]:
     return meta, body
 
 
+def asset_version(path: pathlib.Path) -> str:
+    """Short content hash used to bust the immutable /assets cache.
+
+    vercel.json serves everything under /assets/ as `immutable` for a year, but
+    the filenames are not hashed, so a browser that has already fetched
+    /assets/img/logo.png keeps the old copy for a year and never revalidates — a
+    logo or palette change silently does not reach returning visitors. Rewriting
+    each /assets/ URL to carry the hash makes a changed file a changed URL.
+    """
+    return hashlib.sha256(path.read_bytes()).hexdigest()[:10]
+
+
+def version_assets(document: str) -> str:
+    """Append a content hash to every /assets/ URL in a built page.
+
+    Done as a pass over the finished document rather than per-reference so a new
+    asset in a page partial is covered automatically, with no second place to
+    remember to update.
+    """
+    cache: dict[str, str] = {}
+
+    def replace(match: re.Match[str]) -> str:
+        url = match.group(0)
+        path = ROOT / url.lstrip("/").split("?")[0]
+        if not path.is_file():
+            return url
+        if url not in cache:
+            cache[url] = asset_version(path)
+        return f"{url}?v={cache[url]}"
+
+    return re.sub(r"/assets/[A-Za-z0-9_./@-]+", replace, document)
+
+
 def build() -> None:
     partials = sorted(PAGES_DIR.glob("*.html"))
     if not partials:
@@ -211,6 +246,7 @@ def build() -> None:
             + "\n"
             + SHELL_FOOT
         )
+        document = version_assets(document)
 
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(document, encoding="utf-8")
