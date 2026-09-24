@@ -46,6 +46,11 @@ def main() -> int:
         for target in set(LINK_RE.findall(html)):
             if target.startswith(("http://", "https://", "mailto:", "tel:", "#", "data:")):
                 continue
+            # Serverless functions live under /api and are not served by a plain
+            # static file server, so they cannot be exercised here. They are
+            # covered by `npm test` instead.
+            if target.startswith("/api/"):
+                continue
             url = BASE + target
             if url in checked:
                 continue

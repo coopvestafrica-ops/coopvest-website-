@@ -17,3 +17,6 @@ node_modules/
 
 # Temp file written by the contact test
 .contact_under_test.mjs
+
+# Temp file written by the download test
+.download_under_test.mjs

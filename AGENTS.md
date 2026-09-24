@@ -36,6 +36,24 @@ A page partial begins with an HTML comment of `key: value` lines
 (`title`, `description`, `robots`, optional `jsonld`). Values may contain
 colons, so only the first colon separates.
 
+## The APK download
+
+The download page's button points at `/api/download`, not at a GitHub release
+URL. That indirection is deliberate: the release asset name is not stable. The
+build workflow's release step uploads it as `Coopvest-Africa.apk` (it renames on
+upload), but the tag-push step and manually published releases carry the raw
+`app-release.apk`. Linking a literal filename broke the button once already.
+
+`api/download.js` resolves the newest `.apk` asset on the release at request
+time and redirects, so the button works whichever name a given release used.
+It caches the resolved URL in-process for a few minutes to stay well inside the
+GitHub API rate limit, and falls back to the releases page rather than
+dead-ending the visitor if the API is unreachable.
+
+Because the asset URL GitHub returns is signed and time-limited, the handler
+sends a 302 with `no-store` — the browser must re-resolve through the handler
+rather than caching the signed target.
+
 ## Colour and branding
 
 `assets/css/site.css` is the single source of truth for colour, declared as
