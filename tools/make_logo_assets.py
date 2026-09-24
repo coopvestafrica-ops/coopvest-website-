@@ -134,12 +134,25 @@ def main() -> None:
     full = white_to_alpha(source.crop((110, 140, 905, 845)))
     emblem = white_to_alpha(source.crop((315, 145, 465, 515)))
 
+    # The header lockup comes from the official transparent PNG mark rather than
+    # the JPEG scan, whose 96px render was visibly soft. The mark stacks four
+    # bands: the emblem, the "COOPVEST AFRICA" wordmark, then two tagline lines.
+    # The header wants the emblem and wordmark only — the baked-in tagline is far
+    # too small to read at header size and the shell renders it as live text.
+    mark_full = Image.open(MARK).convert("RGBA")
+    mark_trimmed = mark_full.crop(mark_full.getbbox())
+
+    def trim(image: Image.Image) -> Image.Image:
+        return image.crop(image.getchannel("A").getbbox())
+
+    header_lockup = trim(mark_trimmed.crop((0, 0, mark_trimmed.width, 392)))
+
     # The header renders the lockup about 34px tall, so 96px already exceeds the
     # 2x need. Shipping the 705px scan would cost ~700 KB for no visible gain.
-    save_optimised(fit_height(full, 96), OUT / "logo.png")
-    save_optimised(fit_height(full, 192), OUT / "logo@2x.png")
-    save_optimised(fit_height(silhouette(full), 96), OUT / "logo-white.png")
-    save_optimised(fit_height(silhouette(full), 192), OUT / "logo-white@2x.png")
+    save_optimised(fit_height(header_lockup, 96), OUT / "logo.png")
+    save_optimised(fit_height(header_lockup, 192), OUT / "logo@2x.png")
+    save_optimised(fit_height(silhouette(header_lockup), 96), OUT / "logo-white.png")
+    save_optimised(fit_height(silhouette(header_lockup), 192), OUT / "logo-white@2x.png")
     save_optimised(fit_height(emblem, 160), OUT / "logo-mark.png")
     save_optimised(fit_height(silhouette(emblem), 160), OUT / "logo-mark-white.png")
 
