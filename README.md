@@ -145,7 +145,7 @@ Gmail configuration already used by the backend.
 | `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | one of these | Enables delivery by SMTP, e.g. `smtp.gmail.com` with a Gmail app password. |
 | `SMTP_PORT` | no | Default `465` (implicit TLS). `587` switches to STARTTLS. |
 | `SMTP_SECURE` | no | `true`/`false`. Defaults to true on port 465. |
-| `CONTACT_TO` | no | Where enquiries are delivered (default `hello@coopvest.africa`). |
+| `CONTACT_TO` | no | Where enquiries are delivered (default `coopvestafrica@gmail.com`). |
 | `CONTACT_FROM` | no | Sender, e.g. `Coopvest Website <noreply@coopvest.africa>`. |
 | `CONTACT_REPLY_TO` | no | Overrides Reply-To (default is the enquirer's own address). |
 | `ALLOWED_ORIGINS` | no | Extra origins permitted to post, comma-separated. |

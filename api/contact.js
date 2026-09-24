@@ -15,8 +15,8 @@
  *   SMTP_SECURE      "true" for implicit TLS on 465 (default true)
  *   SMTP_USER        the sending mailbox
  *   SMTP_PASS        the mailbox password or app password
- *   CONTACT_TO       where enquiries are delivered (default hello@coopvest.africa)
- *   CONTACT_FROM     sender, e.g. "Coopvest Website <noreply@coopvest.africa>"
+ *   CONTACT_TO       where enquiries are delivered (default coopvestafrica@gmail.com)
+ *   CONTACT_FROM     sender (default "Coopvest Website <coopvestafrica@gmail.com>")
  *   CONTACT_REPLY_TO optional Reply-To (default: the enquirer's own address)
  *   ALLOWED_ORIGINS  optional comma-separated extra origins allowed to post
  *
@@ -121,7 +121,7 @@ function badRequest(res, errors) {
 }
 
 function fromHeader() {
-  return process.env.CONTACT_FROM || 'Coopvest Website <noreply@coopvest.africa>';
+  return process.env.CONTACT_FROM || 'Coopvest Website <coopvestafrica@gmail.com>';
 }
 
 /** Which delivery path is configured, if any. */
@@ -234,7 +234,7 @@ export default async function handler(req, res) {
 
   if (Object.keys(errors).length) return badRequest(res, errors);
 
-  const to = process.env.CONTACT_TO || 'hello@coopvest.africa';
+  const to = process.env.CONTACT_TO || 'coopvestafrica@gmail.com';
   const replyTo = process.env.CONTACT_REPLY_TO || email;
   const via = provider();
 
@@ -245,7 +245,7 @@ export default async function handler(req, res) {
       ok: false,
       error: 'email_not_configured',
       message:
-        'Our contact form is not accepting messages yet. Please email hello@coopvest.africa directly.',
+        'Our contact form is not accepting messages yet. Please email coopvestafrica@gmail.com directly.',
     });
   }
 
@@ -288,7 +288,7 @@ export default async function handler(req, res) {
       ok: false,
       error: 'delivery_failed',
       message:
-        'We could not send your message just now. Please email hello@coopvest.africa directly.',
+        'We could not send your message just now. Please email coopvestafrica@gmail.com directly.',
     });
   }
 

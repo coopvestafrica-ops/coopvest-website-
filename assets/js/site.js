@@ -196,13 +196,13 @@
             showStatus(
               "error",
               outcome.data.message ||
-                "We could not send your message. Please email hello@coopvest.africa directly."
+                "We could not send your message. Please email coopvestafrica@gmail.com directly."
             );
           })
           .catch(function () {
             showStatus(
               "error",
-              "We could not reach the server. Please email hello@coopvest.africa directly."
+              "We could not reach the server. Please email coopvestafrica@gmail.com directly."
             );
           })
           .finally(function () {

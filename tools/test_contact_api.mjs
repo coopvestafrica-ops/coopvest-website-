@@ -142,7 +142,7 @@ check("SMTP transport uses the configured host and TLS on 465",
   smtpOptions && smtpOptions.host === "smtp.gmail.com" && smtpOptions.port === 465
     && smtpOptions.secure === true, smtpOptions);
 check("SMTP message carries the enquiry and returns to the sender",
-  smtpCall && smtpCall.to === "hello@coopvest.africa"
+  smtpCall && smtpCall.to === "coopvestafrica@gmail.com"
     && smtpCall.replyTo === "ada@example.com"
     && smtpCall.subject.includes("Ada Okonkwo")
     && smtpCall.text.includes("enrol my staff"), smtpCall && smtpCall.subject);
