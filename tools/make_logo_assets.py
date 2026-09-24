@@ -24,14 +24,15 @@ import pathlib
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-BRAND = pathlib.Path("/workspace/project/assets/brand")
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+BRAND = ROOT / "assets" / "brand"
 SRC = BRAND / "coopvest-lockup.jpg"
 MARK = BRAND / "coopvest-mark.png"
-OUT = pathlib.Path("/workspace/project/assets/img")
+OUT = ROOT / "assets" / "img"
 OUT.mkdir(parents=True, exist_ok=True)
 
-INK_900 = (15, 23, 42)
-ACCENT_600 = (79, 70, 229)
+INK_900 = (15, 19, 17)          # app darkBackground
+GRADIENT_END = (15, 61, 20)     # app primaryDark — gradient terminates in brand green
 
 
 def white_to_alpha(image: Image.Image, threshold: int = 12) -> Image.Image:
@@ -75,9 +76,9 @@ def gradient(size: tuple[int, int]) -> Image.Image:
         draw.line(
             [(i, 0), (0, i)],
             fill=(
-                round(15 + t * (ACCENT_600[0] - 15)),
-                round(28 + t * (ACCENT_600[1] - 28)),
-                round(63 + t * (ACCENT_600[2] - 63)),
+                round(INK_900[0] + t * (GRADIENT_END[0] - INK_900[0])),
+                round(INK_900[1] + t * (GRADIENT_END[1] - INK_900[1])),
+                round(INK_900[2] + t * (GRADIENT_END[2] - INK_900[2])),
             ),
             width=1,
         )
@@ -187,9 +188,9 @@ def main() -> None:
     draw = ImageDraw.Draw(og)
     draw.text((80, 330), "Building Wealth Together.", font=load_font(66, True), fill=(255, 255, 255))
     draw.text((80, 420), "A smarter financial platform for salaried workers.",
-              font=load_font(34), fill=(191, 219, 254))
+              font=load_font(34), fill=(205, 229, 219))
     draw.text((80, 500), "Save consistently  ·  Access affordable financing  ·  Transparent records",
-              font=load_font(25), fill=(203, 213, 225))
+              font=load_font(25), fill=(169, 181, 175))
     og.convert("RGB").save(OUT / "og.png", optimize=True)
 
     # A JPEG version of the share card is what most crawlers prefer, and it is

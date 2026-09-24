@@ -77,6 +77,70 @@
       });
     }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
 
+    // Stagger siblings so a row of cards arrives in sequence rather than as one
+    // block. The delay is capped: past the fourth item the eye has already read
+    // the row, and a long cascade just feels slow.
+    items.forEach(function (el) {
+      var parent = el.parentElement;
+      var index = parent ? Array.prototype.indexOf.call(parent.children, el) : 0;
+      el.style.setProperty("--reveal-delay", Math.min(index, 3) * 90 + "ms");
+      observer.observe(el);
+    });
+  }
+
+  /* ------------------------------------------------- count-up statistics -- */
+  // Elements marked `data-count` animate from zero to their target once, when
+  // scrolled into view. The final value is written to the element's text, and
+  // `data-count-prefix` / `data-count-suffix` wrap it (currency, percent, +).
+  function initCounters() {
+    var items = document.querySelectorAll("[data-count]");
+    if (!items.length) return;
+
+    function render(el, value) {
+      var target = Number(el.getAttribute("data-count"));
+      var decimals = (el.getAttribute("data-count-decimals") || "0") | 0;
+      var prefix = el.getAttribute("data-count-prefix") || "";
+      var suffix = el.getAttribute("data-count-suffix") || "";
+      el.textContent = prefix + value.toLocaleString("en-NG", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      }) + suffix;
+      return target;
+    }
+
+    function animate(el) {
+      var target = Number(el.getAttribute("data-count"));
+      if (isNaN(target)) return;
+      var duration = 1400;
+      var start = null;
+
+      function step(now) {
+        if (start === null) start = now;
+        var p = Math.min((now - start) / duration, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        render(el, target * eased);
+        if (p < 1) requestAnimationFrame(step);
+        else render(el, target);
+      }
+      requestAnimationFrame(step);
+    }
+
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !("IntersectionObserver" in window)) {
+      items.forEach(function (el) { render(el, Number(el.getAttribute("data-count"))); });
+      return;
+    }
+
+    items.forEach(function (el) { render(el, 0); });
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        animate(entry.target);
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.4 });
+
     items.forEach(function (el) { observer.observe(el); });
   }
 
@@ -228,6 +292,7 @@
     initActiveLink();
     initYear();
     initReveal();
+    initCounters();
     initForms();
   });
 })();

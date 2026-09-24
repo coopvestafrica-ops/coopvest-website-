@@ -13,7 +13,7 @@ import urllib.error
 import urllib.request
 
 BASE = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8080"
-ROOT = pathlib.Path("/workspace/project")
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 PAGES = ["/", "/about/", "/how-it-works/", "/products/", "/loans/", "/loan-products/",
          "/employers/", "/faqs/", "/download/", "/contact/", "/privacy/", "/terms/",

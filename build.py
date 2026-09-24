@@ -27,7 +27,7 @@ SHELL_HEAD = """<!DOCTYPE html>
   <title>{title}</title>
   <meta name="description" content="{desc}" />
   <link rel="canonical" href="{site}{path}" />
-  <meta name="theme-color" content="#2563EB" />
+  <meta name="theme-color" content="#1B5E20" />
   <meta name="robots" content="{robots}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Coopvest Africa" />
