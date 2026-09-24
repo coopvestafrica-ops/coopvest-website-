@@ -38,6 +38,49 @@ tools/test_contact_api.mjs  smoke tests for the contact handler
 
 Generated pages are committed, so a host can serve the repository directly.
 
+## Loan products
+
+The loan figures on `/loan-products/` and `/loans/` are taken from the app and
+backend rather than invented. If a rate changes, update it in **one** place and
+keep the three sources aligned:
+
+| Source | What it holds |
+| --- | --- |
+| `lib/presentation/screens/loan/loan_application_screen.dart` (app) | rate, tenure, savings multiplier per product |
+| `backend/src/lib/loanPolicy.js` | savings multipliers, blocking statuses |
+| `backend/src/services/referralService.js` | base rates, referral discounts, repayment maths |
+
+Current products (rate, tenure, savings multiple):
+
+| Product | Rate | Tenure | Limit |
+| --- | --- | --- | --- |
+| Quick Loan | 7.5% | 4 months | 3× savings |
+| Flexi Loan | 7.0% | 6 months | 3× savings |
+| Stable Loan (12 months) | 5.0% | 12 months | 3× savings |
+| Stable Loan (18 months) | 7.0% | 18 months | 3× savings |
+| Premium Loan | 14.0% | 24 months | 4× savings |
+| Maxi Loan | 19.0% | 36 months | 5× savings |
+
+Interest is a flat charge over the tenure — `total = amount + (amount × rate)` —
+not compounding. Every loan requires **3 guarantors**.
+
+## App download
+
+`/download/` links to the APK at a stable URL:
+
+```
+https://github.com/teejayfpi/Coopvest-Africa/releases/latest/download/Coopvest-Africa.apk
+```
+
+That release is maintained automatically by the `Build Flutter APK` workflow in
+the app repository: on every successful release build from `main` it replaces the
+`latest-apk` release and re-uploads the APK under the fixed asset name
+`Coopvest-Africa.apk`, so the download link never changes. Workflow artifacts are
+not used, because they require a GitHub login.
+
+Update the version number and size shown on `/download/` (`src/pages/download.html`)
+when a new build is published.
+
 ## Editing content
 
 1. Edit the relevant file in `src/pages/`. Each starts with a metadata comment

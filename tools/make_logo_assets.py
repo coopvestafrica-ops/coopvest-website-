@@ -18,6 +18,12 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 SRC = pathlib.Path("/workspace/repos/Latest-Coopvest/assets/images/coopvest_logo.jpg")
+# The app's launcher icon is the canonical square mark, so it makes a far better
+# favicon than cropping the emblem out of the lockup (the emblem is tall and
+# narrow, and reads as a sliver at 16px).
+LAUNCHER = pathlib.Path(
+    "/workspace/repos/Latest-Coopvest/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+)
 OUT = pathlib.Path("/workspace/project/assets/img")
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -133,26 +139,19 @@ def main() -> None:
     save_optimised(fit_height(emblem, 160), OUT / "logo-mark.png")
     save_optimised(fit_height(silhouette(emblem), 160), OUT / "logo-mark-white.png")
 
-    # Icons. The emblem alone is a tall, narrow bulb, which reads as a sliver at
-    # 16px. Composing it in white on a brand-gradient tile gives a solid,
-    # recognisable favicon at every size and an opaque icon for iOS.
-    tile_src = 1024
-    tile = gradient((tile_src, tile_src)).convert("RGBA")
-    mask = Image.new("L", (tile_src, tile_src), 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        [0, 0, tile_src - 1, tile_src - 1], radius=int(tile_src * 0.22), fill=255
-    )
-    tile.putalpha(mask)
+    # Icons are built from the app's launcher mark, which is already square and
+    # opaque — exactly what a favicon wants. Fall back to the lockup emblem if
+    # that file is unavailable.
+    if LAUNCHER.exists():
+        mark_source = Image.open(LAUNCHER).convert("RGBA")
+    else:
+        mark_source = silhouette(emblem, (255, 255, 255))
 
-    mark_white = silhouette(emblem)
     for size, name in [(32, "favicon-32.png"), (48, "favicon-48.png"),
                        (180, "apple-touch-icon.png"), (192, "icon-192.png"),
                        (512, "icon-512.png")]:
-        inner = fit_height(mark_white, round(size * 0.68))
-        icon = tile.resize((size, size), Image.LANCZOS)
-        icon.alpha_composite(inner, ((size - inner.width) // 2,
-                                     (size - inner.height) // 2))
-        save_optimised(icon, OUT / name, colours=192)
+        icon = mark_source.resize((size, size), Image.LANCZOS)
+        save_optimised(icon, OUT / name, colours=256)
 
     Image.open(OUT / "favicon-48.png").save(
         OUT / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)]
