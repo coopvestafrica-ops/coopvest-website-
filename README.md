@@ -104,10 +104,19 @@ pages live at `/about/` rather than `/about`. Keep that convention when linking.
 
 ## Logo assets
 
-`tools/make_logo_assets.py` derives every logo asset from the official lockup
-(`coopvest_logo.jpg` in the app repository) — converting it to a transparent
-PNG, producing a white silhouette for dark surfaces, and composing the favicon
-and social card. It requires Pillow and NumPy:
+The official artwork is committed under `assets/brand/`, so the build never
+reaches outside the repository:
+
+- `coopvest-mark.png` — the square mark, used for the favicon and icon set. This
+  is the artwork supplied for the site and is byte-identical to the app's splash
+  logo.
+- `coopvest-lockup.jpg` — mark plus wordmark on white, used for the header logo
+  and the social card.
+
+`tools/make_logo_assets.py` turns those into every web asset: a transparent
+lockup, a white silhouette for dark surfaces, the favicon/icon set (the mark on a
+white rounded tile, matching the app's launcher icon so the tab icon and the
+home-screen icon agree), and the social share card. It requires Pillow and NumPy:
 
 ```bash
 pip install pillow numpy

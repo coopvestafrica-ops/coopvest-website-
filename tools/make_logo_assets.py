@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
-"""Derive web-ready logo assets from the official Coopvest lockup.
+"""Derive web-ready logo assets from the official Coopvest artwork.
 
-Source: Latest-Coopvest/assets/images/coopvest_logo.jpg (logo on white).
-Outputs into /workspace/project/assets/img:
+Sources (committed alongside this script, so the build never reaches outside the
+repository):
+  assets/brand/coopvest-mark.png  the official square mark — used for the icon
+                                 set. This is the artwork supplied for the site
+                                 and is byte-identical to the app's splash logo.
+  assets/brand/coopvest-lockup.jpg  the full lockup (mark + wordmark) on white,
+                                 used for the header and social card.
+
+Outputs into assets/img:
   logo.png / logo@2x.png          full lockup, transparent, for the header
   logo-white.png                  full lockup as a light silhouette, for dark surfaces
   logo-mark.png                   square emblem only, transparent
   favicon.ico, favicon-32.png     browser icon
   apple-touch-icon.png            iOS home-screen icon
-  og.png                          social share card on the brand gradient
+  og.png / og.jpg                 social share card on the brand gradient
 """
 from __future__ import annotations
 
@@ -17,13 +24,9 @@ import pathlib
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-SRC = pathlib.Path("/workspace/repos/Latest-Coopvest/assets/images/coopvest_logo.jpg")
-# The app's launcher icon is the canonical square mark, so it makes a far better
-# favicon than cropping the emblem out of the lockup (the emblem is tall and
-# narrow, and reads as a sliver at 16px).
-LAUNCHER = pathlib.Path(
-    "/workspace/repos/Latest-Coopvest/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
-)
+BRAND = pathlib.Path("/workspace/project/assets/brand")
+SRC = BRAND / "coopvest-lockup.jpg"
+MARK = BRAND / "coopvest-mark.png"
 OUT = pathlib.Path("/workspace/project/assets/img")
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -139,19 +142,28 @@ def main() -> None:
     save_optimised(fit_height(emblem, 160), OUT / "logo-mark.png")
     save_optimised(fit_height(silhouette(emblem), 160), OUT / "logo-mark-white.png")
 
-    # Icons are built from the app's launcher mark, which is already square and
-    # opaque — exactly what a favicon wants. Fall back to the lockup emblem if
-    # that file is unavailable.
-    if LAUNCHER.exists():
-        mark_source = Image.open(LAUNCHER).convert("RGBA")
-    else:
-        mark_source = silhouette(emblem, (255, 255, 255))
+    # Icons come from the official mark. At 16px the mark's blue-and-green detail
+    # muddies against a dark browser chrome, so it sits on a white rounded tile —
+    # the same treatment as the app's own launcher icon, which keeps the favicon
+    # consistent with the app on the member's home screen.
+    mark = Image.open(MARK).convert("RGBA").crop(
+        Image.open(MARK).convert("RGBA").getchannel("A").getbbox()
+    )
+
+    def icon(size: int) -> Image.Image:
+        canvas = Image.new("RGBA", (size * 4, size * 4), (0, 0, 0, 0))
+        ImageDraw.Draw(canvas).rounded_rectangle(
+            [0, 0, size * 4 - 1, size * 4 - 1], radius=int(size * 4 * 0.22), fill=(255, 255, 255, 255)
+        )
+        inner = fit_height(mark, round(size * 4 * 0.82))
+        canvas.alpha_composite(inner, ((canvas.width - inner.width) // 2,
+                                       (canvas.height - inner.height) // 2))
+        return canvas.resize((size, size), Image.LANCZOS)
 
     for size, name in [(32, "favicon-32.png"), (48, "favicon-48.png"),
                        (180, "apple-touch-icon.png"), (192, "icon-192.png"),
                        (512, "icon-512.png")]:
-        icon = mark_source.resize((size, size), Image.LANCZOS)
-        save_optimised(icon, OUT / name, colours=256)
+        save_optimised(icon(size), OUT / name, colours=256)
 
     Image.open(OUT / "favicon-48.png").save(
         OUT / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)]
