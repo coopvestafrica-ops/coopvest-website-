@@ -63,6 +63,13 @@ robots: index, follow
               <span class="hint">Please do not include passwords, full bank details or identity document numbers in this form.</span>
             </div>
 
+            <!-- Honeypot: hidden from people, irresistible to bots. Any value here
+                 is discarded server-side. -->
+            <div class="visually-hidden" aria-hidden="true">
+              <label for="website">Website</label>
+              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+
             <button class="btn btn--primary btn--lg" type="submit">Send enquiry</button>
             <p class="form-note">By submitting, you agree to our <a href="/privacy/">Privacy Policy</a>.</p>
           </form>

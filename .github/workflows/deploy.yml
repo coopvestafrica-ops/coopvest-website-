@@ -1,0 +1,101 @@
+name: Deploy to Vercel
+
+# Production deploys come from main. Pull requests get a preview deployment so
+# changes can be reviewed on a real URL before merging.
+#
+# Two ways to connect this repository to Vercel — pick one:
+#
+#   1. Git integration (recommended): install the Vercel GitHub App for this
+#      repository. Vercel then deploys automatically on push and on pull
+#      requests, and this workflow is not needed.
+#   2. This workflow: add the secrets below and Vercel is driven from Actions.
+#      Required repository secrets (Settings -> Secrets and variables ->
+#      Actions):
+#        VERCEL_TOKEN       Vercel personal access token
+#        VERCEL_ORG_ID      team id, e.g. team_xxxxxxxx
+#        VERCEL_PROJECT_ID  project id, e.g. prj_xxxxxxxx
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebuild the site
+        run: python3 build.py
+
+      - name: Check generated pages are committed
+        # Generated HTML is committed. If a partial was edited without running
+        # build.py, the deployed site would silently disagree with the source.
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::Generated pages are out of date. Run 'python3 build.py' and commit the result."
+            git --no-pager diff --stat
+            exit 1
+          fi
+
+      - name: Check internal links and assets
+        run: |
+          python3 -m http.server 8080 &
+          sleep 2
+          python3 tools/check_links.py
+
+  deploy:
+    name: ${{ github.event_name == 'pull_request' && 'Preview' || 'Production' }} deploy
+    runs-on: ubuntu-latest
+    needs: verify
+    # Skipped (not failed) when the Vercel secrets are absent, so a repository
+    # that has not been connected to Vercel still shows green on the verify job.
+    if: ${{ secrets.VERCEL_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment
+        run: |
+          vercel pull --yes \
+            --environment=${{ github.event_name == 'pull_request' && 'preview' || 'production' }} \
+            --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project artifacts
+        run: vercel build ${{ github.event_name != 'pull_request' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt ${{ github.event_name != 'pull_request' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed to $url"
+
+      - name: Summarise
+        run: |
+          {
+            echo "### Deployment"
+            echo ""
+            echo "- Environment: ${{ github.event_name == 'pull_request' && 'preview' || 'production' }}"
+            echo "- URL: ${{ steps.deploy.outputs.url }}"
+          } >> "$GITHUB_STEP_SUMMARY"

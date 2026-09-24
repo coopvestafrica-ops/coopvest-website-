@@ -81,12 +81,13 @@
   }
 
   /* --------------------------------------------------------- form logic -- */
-  // Validates, then shows a local confirmation. No data is transmitted: the
-  // site is static and there is no backend form handler configured yet, so
-  // pretending to send would be worse than saying so.
+  // Validates client-side, then posts to /api/contact, which emails the enquiry.
+  // Client validation is for fast feedback only — the endpoint validates again.
   function initForms() {
     document.querySelectorAll("[data-enquiry-form]").forEach(function (form) {
       var status = form.querySelector("[data-form-status]");
+      var submit = form.querySelector('button[type="submit"]');
+      var submitLabel = submit ? submit.textContent : "";
 
       function setError(field, message) {
         var input = field.querySelector("input, select, textarea");
@@ -99,17 +100,22 @@
         form.querySelectorAll(".field").forEach(function (field) { setError(field, ""); });
       }
 
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
-        clearAll();
-        if (status) status.removeAttribute("data-state");
+      function showStatus(state, message) {
+        if (!status) return;
+        status.setAttribute("data-state", state);
+        status.textContent = message;
+      }
 
+      function validate() {
         var ok = true;
         var firstInvalid = null;
 
         form.querySelectorAll(".field").forEach(function (field) {
           var input = field.querySelector("input, select, textarea");
           if (!input || !input.required) return;
+
+          // Skip the honeypot — it is intentionally empty and hidden.
+          if (input.name === "website") return;
 
           var value = (input.value || "").trim();
           var message = "";
@@ -131,22 +137,80 @@
           }
         });
 
-        if (!ok) {
-          if (status) {
-            status.setAttribute("data-state", "error");
-            status.textContent = "Please correct the highlighted fields and try again.";
-          }
-          if (firstInvalid) firstInvalid.focus();
+        return { ok: ok, firstInvalid: firstInvalid };
+      }
+
+      // Surface per-field errors returned by the endpoint.
+      function applyServerErrors(errors) {
+        Object.keys(errors || {}).forEach(function (name) {
+          var input = form.querySelector('[name="' + name + '"]');
+          if (input) setError(input.closest(".field"), errors[name]);
+        });
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        clearAll();
+        if (status) status.removeAttribute("data-state");
+
+        var result = validate();
+        if (!result.ok) {
+          showStatus("error", "Please correct the highlighted fields and try again.");
+          if (result.firstInvalid) result.firstInvalid.focus();
           return;
         }
 
-        form.reset();
-        if (status) {
-          status.setAttribute("data-state", "success");
-          status.textContent =
-            "Thank you — your enquiry is ready to send. Connect a form handler " +
-            "(or email us directly at hello@coopvest.africa) to receive it.";
+        var payload = {};
+        new FormData(form).forEach(function (value, key) {
+          payload[key] = value;
+        });
+
+        if (submit) {
+          submit.disabled = true;
+          submit.textContent = "Sending…";
         }
+
+        fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (data) {
+              return { ok: response.ok, data: data };
+            });
+          })
+          .then(function (outcome) {
+            if (outcome.ok) {
+              form.reset();
+              showStatus("success", "Thank you — your message has been sent. We will respond shortly.");
+              return;
+            }
+
+            if (outcome.data.error === "validation_failed") {
+              applyServerErrors(outcome.data.errors);
+              showStatus("error", "Please correct the highlighted fields and try again.");
+              return;
+            }
+
+            showStatus(
+              "error",
+              outcome.data.message ||
+                "We could not send your message. Please email hello@coopvest.africa directly."
+            );
+          })
+          .catch(function () {
+            showStatus(
+              "error",
+              "We could not reach the server. Please email hello@coopvest.africa directly."
+            );
+          })
+          .finally(function () {
+            if (submit) {
+              submit.disabled = false;
+              submit.textContent = submitLabel;
+            }
+          });
       });
     });
   }
