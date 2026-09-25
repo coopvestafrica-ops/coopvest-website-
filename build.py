@@ -17,6 +17,8 @@ import html
 import json
 import pathlib
 import re
+import subprocess
+import sys
 
 ROOT = pathlib.Path(__file__).parent
 PAGES_DIR = ROOT / "src" / "pages"
@@ -31,8 +33,8 @@ ORGANIZATION = {
     "url": f"{SITE}/",
     "logo": f"{SITE}/assets/img/icon-512.png",
     "description": (
-        "A digital cooperative platform helping salaried workers save consistently "
-        "and access affordable financing."
+        "A digital cooperative platform helping salaried workers and direct savers "
+        "save consistently and access affordable financing."
     ),
     "email": "coopvestafrica@gmail.com",
     "areaServed": {"@type": "Country", "name": "Nigeria"},
@@ -114,7 +116,7 @@ SHELL_FOOT = """  </main>
           <div class="footer__brand">
             <img class="footer__logo" src="/assets/img/logo-white.png" srcset="/assets/img/logo-white.png 1x, /assets/img/logo-white@2x.png 2x" width="139" height="96" alt="Coopvest Africa" />
           </div>
-          <p>A digital cooperative platform helping salaried workers save consistently and access affordable financing.</p>
+          <p>A digital cooperative platform helping salaried workers and direct savers save consistently and access affordable financing.</p>
         </div>
         <div>
           <h2>Company</h2>
@@ -384,6 +386,17 @@ def build() -> None:
         print("  ", path)
 
     write_sitemap(urls)
+
+    # The form and its server-side allowlist are edited in two places, and a
+    # mismatch silently rejects every enquiry. Fail the build instead.
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "check_topics.py")],
+        capture_output=True,
+        text=True,
+    )
+    print(" ", result.stdout.strip())
+    if result.returncode != 0:
+        raise SystemExit(result.stdout + result.stderr)
 
 
 def write_sitemap(urls: list[tuple[str, bool]]) -> None:

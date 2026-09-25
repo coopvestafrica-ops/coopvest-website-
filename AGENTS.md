@@ -132,6 +132,31 @@ not zoom the page on focus; the rate table keeps its first column sticky while
 the rest scrolls; and below 560px the header's two calls to action move into the
 sticky bar at the foot of the page, where a thumb can reach them.
 
+## Membership terminology
+
+The product has two contribution routes, and the copy must always reflect both.
+The mobile app's own wording is the reference:
+
+- **Salary Deduction** — the employer deducts each month and remits. Requires
+  employment details. For employees of a partner employer or cooperative.
+- **Direct Deposit** — the member pays by bank transfer, card or USSD. No
+  employment details needed. For everyone not on a partner payroll, including
+  the self-employed.
+
+A member can switch between them from the app's Membership screen.
+
+This matters because the site originally described the audience as "salaried
+workers" only — thirteen places — which excluded every direct depositor, and the
+"Who can join" FAQ actively told them they could not. When writing copy, test it
+against both routes: "salaried workers and direct savers" rather than "salaried
+workers". Wording that describes the salary route specifically (payroll cycles,
+remittance, employer authorisation) is fine and should stay as it is.
+
+The contact form's topic options are mirrored in an allowlist in
+`api/contact.js`, and `tools/check_topics.py` fails the build if the two drift —
+a mismatch makes the form reject every submission regardless of what the visitor
+picks. The build runs it automatically.
+
 ## Structured data
 
 `build.py` generates the JSON-LD for every page rather than each partial

@@ -42,7 +42,7 @@ const valid = {
   name: "Ada Okonkwo",
   email: "ada@example.com",
   phone: "+234 800 000 0000",
-  topic: "Join as an individual member",
+  topic: "Join by Direct Deposit (pay myself)",
   message: "I would like to know how to enrol my staff and join as a member.",
   website: "",
 };

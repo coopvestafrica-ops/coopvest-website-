@@ -37,7 +37,8 @@ const MAX = {
 };
 
 const TOPICS = new Set([
-  'Join as an individual member',
+  'Join by Direct Deposit (pay myself)',
+  'Join through my employer (Salary Deduction)',
   'Employer / institution partnership',
   'Existing account or contribution query',
   'Loan enquiry',
