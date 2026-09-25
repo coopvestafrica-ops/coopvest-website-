@@ -85,7 +85,10 @@ Place a photo in a page with the `photo` class and a `photo-frame` wrapper:
 
 `build.py` wraps any such `<img>` in a `<picture>` with a WebP `<source>` when a
 `.webp` sibling exists, so authors write a plain `<img>` and browsers that support
-WebP get the smaller file. Add `photo-frame--dark` for artwork that is a dark
+WebP get the smaller file. The hero image (`class="hero__photo"`) is covered too,
+since it is the largest image on the landing page. Tags may be written as either
+`<img ...>` or `<img ... />`; the build normalises the closing so it never emits
+`/ />`. Add `photo-frame--dark` for artwork that is a dark
 scene rather than a photo of people (the device mockup), so it does not read as a
 black rectangle on a light border.
 
