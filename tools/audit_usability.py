@@ -86,12 +86,12 @@ def main() -> int:
 
                 for t in r["smallTargets"]:
                     line = (
-                        f"{width}px {path}: {t['tag']} {t['w']}x{t['h']} — \"{t['text']}\""
+                        f"{width}px {path}: {t['tag']} {t['w']}x{t['h']} ({t['text']})"
                     )
                     (failures if t["hard"] else advisories).append(line)
                 for t in r["smallText"]:
                     failures.append(
-                        f"{width}px {path}: text {t['size']}px < {MIN_TEXT}px — "
+                        f"{width}px {path}: text {t['size']}px < {MIN_TEXT}px: "
                         f"\"{t['text']}\""
                     )
                 for t in r["wideTables"]:

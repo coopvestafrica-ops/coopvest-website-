@@ -1,18 +1,18 @@
 /* ==========================================================================
-   Coopvest Africa — corporate site design system
+   Coopvest Africa - corporate site design system
    Single stylesheet, no build step. Tokens first, then primitives, then
    page sections. Keep every colour a token so the brand stays consistent.
    ========================================================================== */
 
 :root {
-  /* Brand — emerald + gold, taken from the Coopvest mobile app palette so the
+  /* Brand - emerald + gold, taken from the Coopvest mobile app palette so the
      site and the app read as one product. Gold is reserved for accents. */
-  --brand-600: #1b5e20;   /* app primary      — buttons, steps, focus */
-  --brand-700: #2e7d32;   /* app primaryLight — links, eyebrows, active nav */
-  --brand-800: #0f3d14;   /* app primaryDark  — pressed / deep fills */
+  --brand-600: #1b5e20;   /* app primary      - buttons, steps, focus */
+  --brand-700: #2e7d32;   /* app primaryLight - links, eyebrows, active nav */
+  --brand-800: #0f3d14;   /* app primaryDark  - pressed / deep fills */
   --accent-600: #f2b705;  /* app accent (gold) */
   --accent-700: #dba400;  /* app accentPressed */
-  --on-accent: #3d2e00;   /* app onAccent — dark text on gold fills */
+  --on-accent: #3d2e00;   /* app onAccent - dark text on gold fills */
 
   /* Surfaces */
   --bg: #f5f7f6;          /* app pageBackground */
@@ -34,7 +34,7 @@
   --danger: #dc2626;      /* app error */
   --danger-bg: #fee2e2;   /* app errorSurface */
 
-  /* Type. The steps below `--step-3` are fixed, which is correct — body copy
+  /* Type. The steps below `--step-3` are fixed, which is correct - body copy
      should not shrink on a small screen. The display sizes are fluid so the
      headline scales with the viewport instead of jumping at a breakpoint. */
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -107,8 +107,8 @@ body {
 
 img, svg, video { display: block; max-width: 100%; height: auto; }
 
-/* Long unbroken strings — URLs in prose, a long email address, a reference
-   number — otherwise push their container wider than the screen. */
+/* Long unbroken strings - URLs in prose, a long email address, a reference
+   number - otherwise push their container wider than the screen. */
 p, li, dd, dt, td, th, caption, figcaption, a, code { overflow-wrap: break-word; }
 
 a { color: var(--brand-700); text-decoration: none; }
@@ -161,7 +161,7 @@ ul, ol { padding-left: 1.25rem; }
 
 /* The skip link must be off-screen but must not extend the scrollable area.
    `left: -9999px` does exactly that and makes the document wider than the
-   viewport on a phone, so it is hidden with a clip and a 1px box instead —
+   viewport on a phone, so it is hidden with a clip and a 1px box instead -
    still focusable and still revealed on focus. */
 .skip-link {
   position: absolute;
@@ -242,8 +242,8 @@ ul, ol { padding-left: 1.25rem; }
   .grid--2, .grid--3, .grid--4 { grid-template-columns: 1fr; }
 }
 
-/* Grid children default to `min-width: auto`, which means a wide child — a
-   table, a long unbroken string, a fixed-size image — expands its track and
+/* Grid children default to `min-width: auto`, which means a wide child - a
+   table, a long unbroken string, a fixed-size image - expands its track and
    pushes the whole page sideways. `minmax(0, …)` on every track caps that, and
    the explicit `min-width: 0` covers the flex layouts too. This is the single
    most common cause of a phone page scrolling horizontally. */
@@ -532,8 +532,8 @@ ul, ol { padding-left: 1.25rem; }
 .to-top:hover { background: var(--brand-600); color: #fff; border-color: var(--brand-600); }
 @media (prefers-reduced-motion: reduce) { .to-top { transition: none; } }
 
-/* Mobile action bar. On a phone the two things a visitor wants — get the app,
-   talk to us — are otherwise two taps away behind a hamburger. */
+/* Mobile action bar. On a phone the two things a visitor wants - get the app,
+   talk to us - are otherwise two taps away behind a hamburger. */
 .mobile-cta {
   position: fixed;
   inset: auto 0 0 0;
@@ -828,6 +828,14 @@ tbody tr:last-child td { border-bottom: 0; }
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 .notice strong { display: block; margin-bottom: var(--sp-1); }
+/* The dark "Credibility" section needs a notice that does not flash a light
+   amber card into a near-black band. Same warning semantics, dark surface. */
+.notice--onink {
+  background: rgba(217, 119, 6, 0.12);
+  border-left-color: var(--accent-600);
+}
+.notice--onink p { color: #a9b5af; }
+.notice--onink a { color: #f2b705; }
 
 .prose { max-width: 74ch; }
 .prose h2 { font-size: var(--step-3); margin-top: var(--sp-7); margin-bottom: var(--sp-3); }
@@ -841,7 +849,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-2); padding: 0; }
 .breadcrumb li + li::before { content: "/"; margin-right: var(--sp-2); color: var(--ink-soft); }
 /* Breadcrumb links are small text, so they get a taller hit area than the line
-   box alone would give — the last thing a thumb should miss is the way back. */
+   box alone would give - the last thing a thumb should miss is the way back. */
 .breadcrumb a { display: inline-block; padding-block: 0.4rem; }
 .page-hero .breadcrumb, .page-hero .breadcrumb a { color: #cde5db; }
 .page-hero .breadcrumb li + li::before { color: rgba(205, 229, 219, 0.6); }
@@ -863,7 +871,7 @@ tbody tr:last-child td { border-bottom: 0; }
 
 /* ------------------------------------------------------------- photos ---- */
 /* Photography is the one place the page is allowed to break the flat, bordered
-   card treatment — a real face carries more trust than another bordered box, so
+   card treatment - a real face carries more trust than another bordered box, so
    these slots are rounded and cropped rather than framed. */
 .photo {
   display: block;
@@ -885,7 +893,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .photo-frame--4x5 { aspect-ratio: 4 / 5; }
 .photo-frame--16x9 { aspect-ratio: 16 / 9; }
 
-/* Some supplied artwork is a dark scene rather than a photo of people — a device
+/* Some supplied artwork is a dark scene rather than a photo of people - a device
    mockup on a black stage, for instance. On the default light frame that reads
    as a hard black rectangle, so these slots take a matching dark surround and
    the image blends into it instead. */
@@ -942,7 +950,7 @@ tbody tr:last-child td { border-bottom: 0; }
 /* Scroll reveal. `data-reveal` items are staggered by their index within the
    parent, set as an inline custom property by site.js, so no CSS delay table is
    needed. Everything collapses to "visible" when the reader prefers less
-   motion — the animation is decoration, never information. */
+   motion - the animation is decoration, never information. */
 .reveal {
   opacity: 0;
   transform: translateY(16px);
@@ -959,7 +967,7 @@ tbody tr:last-child td { border-bottom: 0; }
   .card--lift:focus-within { box-shadow: var(--shadow); }
 }
 
-/* Hero entrance — runs once on load, in reading order. */
+/* Hero entrance - runs once on load, in reading order. */
 .hero__inner > * {
   animation: rise-in 0.8s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
@@ -1147,7 +1155,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .footer__bottom a { display: inline-block; padding-block: 0.45rem; min-height: 44px; }
 
 /* --------------------------------------------------------------- print -- */
-/* People print policy pages — to keep on file, to hand to an employer, or to
+/* People print policy pages - to keep on file, to hand to an employer, or to
    read offline. Without this the dark sections flood the page with ink and the
    navigation and floating controls print as clutter. */
 @media print {

@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Coopvest Africa corporate website — static pages plus the contact-form and APK-download serverless functions.",
+  "description": "Coopvest Africa corporate website: static pages plus the contact-form and APK-download serverless functions.",
   "scripts": {
     "build": "python3 build.py",
     "check": "python3 tools/check_links.py",

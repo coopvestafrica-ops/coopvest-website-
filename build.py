@@ -178,7 +178,7 @@ def parse_partial(text: str) -> tuple[dict[str, str], str]:
 
     A partial starts with an HTML comment of `key: value` lines, e.g.
         <!--
-        title: About Us — Coopvest Africa
+        title: About Us | Coopvest Africa
         description: …
         -->
     Everything after that comment is the page body. Values may themselves
@@ -208,7 +208,7 @@ def asset_version(path: pathlib.Path) -> str:
 
     vercel.json serves everything under /assets/ as `immutable` for a year, but
     the filenames are not hashed, so a browser that has already fetched
-    /assets/img/logo.png keeps the old copy for a year and never revalidates — a
+    /assets/img/logo.png keeps the old copy for a year and never revalidates - a
     logo or palette change silently does not reach returning visitors. Rewriting
     each /assets/ URL to carry the hash makes a changed file a changed URL.
     """
@@ -238,7 +238,7 @@ def version_assets(document: str) -> str:
 
 # A photo `<img>` whose file has a WebP sibling gets wrapped in a `<picture>`, so
 # browsers that support WebP take the smaller file and the rest fall back to the
-# JPEG. Doing it here keeps the page partials readable — an author writes a
+# JPEG. Doing it here keeps the page partials readable - an author writes a
 # normal `<img>` and does not have to remember the alternate format.
 PHOTO_IMG = re.compile(r'(?P<indent>[ \t]*)<img(?P<attrs>[^>]*?class="photo"[^>]*?)>', re.DOTALL)
 PHOTO_SRC = re.compile(r'src="(?P<src>/assets/img/[^"]+?)\.(?:jpg|jpeg|png)"')
@@ -275,7 +275,7 @@ def faq_schema(body: str) -> dict[str, object] | None:
 
     Reading the questions back out of the rendered body rather than asking the
     author to restate them means the schema cannot fall out of step with the
-    visible copy — which is both a maintenance win and what the guidelines
+    visible copy - which is both a maintenance win and what the guidelines
     require, since the markup must match what the reader sees.
     """
     items = []
@@ -309,9 +309,9 @@ def structured_data(slug: str, url_path: str, meta: dict[str, str], body: str) -
 
     if slug not in {"home", "404"}:
         title = html.unescape(meta.get("title", slug.title()))
-        # Page titles are written as "About Us — Coopvest Africa"; the crumb
+        # Page titles are written as "About Us | Coopvest Africa"; the crumb
         # should read "About Us", so drop the brand suffix.
-        label = title.split(" — ")[0].strip()
+        label = title.split(" | ")[0].strip()
         graph.append(
             {
                 "@type": "BreadcrumbList",

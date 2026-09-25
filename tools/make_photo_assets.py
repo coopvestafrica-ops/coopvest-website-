@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Derive web-ready photography from the supplied originals.
 
-Sources live in download/ (as uploaded). They are large — several megabytes each
-— and several are PNG data under a .jpg extension, which is both the wrong
+Sources live in download/ (as uploaded). They are large (several megabytes each)
+and several are PNG data under a .jpg extension, which is both the wrong
 format for a photograph and roughly five times the size it needs to be. This
 script re-encodes each one to the size and format its slot on the page actually
 needs, and emits WebP alongside JPEG so modern browsers get the smaller file.
@@ -12,7 +12,7 @@ needs, and emits WebP alongside JPEG so modern browsers get the smaller file.
 Outputs into assets/img. The originals are left untouched in download/.
 
 Each photo is also given a focal point. Photographs of people crop badly from
-the centre — a centre crop of a standing subject cuts off heads — so the crop
+the centre: a centre crop of a standing subject cuts off heads, so the crop
 is biased vertically towards the upper third where the faces are.
 """
 from __future__ import annotations
