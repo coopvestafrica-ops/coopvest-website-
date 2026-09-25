@@ -125,7 +125,7 @@ SHELL_FOOT = """  </main>
             <li><a href="/how-it-works/">How It Works</a></li>
             <li><a href="/products/">Products &amp; Services</a></li>
             <li><a href="/loans/">Loans</a></li>
-            <li><a href="/loan-products/">Loan Products &amp; Rates</a></li>
+            <li><a href="/loan-products/">Loan Rates</a></li>
           </ul>
         </div>
         <div>
@@ -150,10 +150,8 @@ SHELL_FOOT = """  </main>
       <div class="footer__bottom">
         <p>&copy; <span data-year>2026</span> Coopvest Africa. All rights reserved.</p>
         <ul>
-          <li><a href="/privacy/">Privacy</a></li>
-          <li><a href="/terms/">Terms</a></li>
-          <li><a href="/cookies/">Cookies</a></li>
-          <li><a href="/disclosures/">Disclosures</a></li>
+          <li><a href="/download/">Get the App</a></li>
+          <li><a href="/contact/">Contact</a></li>
         </ul>
       </div>
     </div>
@@ -240,7 +238,12 @@ def version_assets(document: str) -> str:
 # browsers that support WebP take the smaller file and the rest fall back to the
 # JPEG. Doing it here keeps the page partials readable - an author writes a
 # normal `<img>` and does not have to remember the alternate format.
-PHOTO_IMG = re.compile(r'(?P<indent>[ \t]*)<img(?P<attrs>[^>]*?class="photo"[^>]*?)>', re.DOTALL)
+# The hero is included: it is the largest image on the landing page, so it
+# benefits most from the smaller format.
+PHOTO_IMG = re.compile(
+    r'(?P<indent>[ \t]*)<img(?P<attrs>[^>]*?class="(?:photo|hero__photo)"[^>]*?)>',
+    re.DOTALL,
+)
 PHOTO_SRC = re.compile(r'src="(?P<src>/assets/img/[^"]+?)\.(?:jpg|jpeg|png)"')
 
 
@@ -254,6 +257,12 @@ def add_webp_sources(document: str) -> str:
         if not webp.is_file():
             return match.group(0)
         indent = match.group("indent")
+        # Authors write either `<img ...>` or `<img ... />`; the capture keeps a
+        # trailing solidus in the second case, so drop it before re-closing the
+        # tag rather than emitting "/ />".
+        attrs = attrs.rstrip()
+        if attrs.endswith("/"):
+            attrs = attrs[:-1].rstrip()
         return (
             f'{indent}<picture>\n'
             f'{indent}  <source srcset="{src.group("src")}.webp" type="image/webp" />\n'
