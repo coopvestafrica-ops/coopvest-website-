@@ -1,11 +1,11 @@
 /**
- * Contact form handler — POST /api/contact
+ * Contact form handler - POST /api/contact
  *
  * Delivers website enquiries by email. Two delivery paths are supported so the
  * site can reuse whichever mail setup is already in place:
  *
- *   1. Resend HTTP API  — used when RESEND_API_KEY is set. No dependencies.
- *   2. SMTP             — used when SMTP_HOST/SMTP_USER/SMTP_PASS are set,
+ *   1. Resend HTTP API  - used when RESEND_API_KEY is set. No dependencies.
+ *   2. SMTP             - used when SMTP_HOST/SMTP_USER/SMTP_PASS are set,
  *                         matching the backend's existing Gmail configuration.
  *
  * Environment variables:
@@ -250,7 +250,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const subject = `[Website] ${topic} — ${name}`;
+  const subject = `[Website] ${topic}: ${name}`;
   const text = [
     'New enquiry from the Coopvest Africa website',
     '',

@@ -1,5 +1,5 @@
 /**
- * APK download handler — GET /api/download
+ * APK download handler - GET /api/download
  *
  * Sends the visitor to the current Android build. The site links to this path
  * rather than to a release URL directly, because the asset name is not stable:

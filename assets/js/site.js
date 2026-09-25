@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Coopvest Africa — shared site behaviour
+   Coopvest Africa - shared site behaviour
    Progressive enhancement only: every page works without JavaScript.
    ========================================================================== */
 (function () {
@@ -198,7 +198,7 @@
 
   /* --------------------------------------------------------- form logic -- */
   // Validates client-side, then posts to /api/contact, which emails the enquiry.
-  // Client validation is for fast feedback only — the endpoint validates again.
+  // Client validation is for fast feedback only - the endpoint validates again.
   function initForms() {
     document.querySelectorAll("[data-enquiry-form]").forEach(function (form) {
       var status = form.querySelector("[data-form-status]");
@@ -230,7 +230,7 @@
           var input = field.querySelector("input, select, textarea");
           if (!input || !input.required) return;
 
-          // Skip the honeypot — it is intentionally empty and hidden.
+          // Skip the honeypot - it is intentionally empty and hidden.
           if (input.name === "website") return;
 
           var value = (input.value || "").trim();
@@ -299,7 +299,7 @@
           .then(function (outcome) {
             if (outcome.ok) {
               form.reset();
-              showStatus("success", "Thank you — your message has been sent. We will respond shortly.");
+              showStatus("success", "Thank you, your message has been sent. We will respond shortly.");
               return;
             }
 
