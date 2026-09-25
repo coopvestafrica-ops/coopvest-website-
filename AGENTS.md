@@ -94,6 +94,42 @@ real face carries more trust than another bordered box. Keep them out of the
 hero unless the overlay is dark enough; white text over an undimmed photo will
 fail contrast.
 
+## Structured data
+
+`build.py` generates the JSON-LD for every page rather than each partial
+carrying its own, so the brand details cannot drift apart:
+
+- an `Organization` node on every page, defined once as `ORGANIZATION`
+- a `BreadcrumbList` on interior pages, labelled from the page's own title
+- a `FAQPage` on any page containing `<details>`/`faq__body` markup
+
+The FAQ schema is *derived* from the rendered questions and answers, so the
+markup always matches what the reader sees — which is what the search guidelines
+require, and it means editing the visible copy updates the schema automatically.
+A partial may still declare its own `jsonld:` line; that is emitted alongside the
+generated blocks, not instead of them.
+
+If you change the contact address or brand description, change it in
+`ORGANIZATION` — not in each page.
+
+## Navigation and scroll behaviour
+
+`site.js` sets `data-scrolled` on the header, fills the reading-progress bar and
+reveals the back-to-top control from one rAF-throttled scroll listener. The
+header compaction is a layout change and still happens under
+`prefers-reduced-motion`; the smooth scroll-to-top does not.
+
+The mobile action bar (`.mobile-cta`) is display-only below 620px and the body
+takes matching bottom padding so it never covers the end of a page. The
+back-to-top button moves up to clear it.
+
+## Print
+
+There is a `@media print` block at the end of `site.css`. Policy and legal pages
+get printed — to keep on file or hand to an employer — so the dark sections are
+forced to black on white, the navigation and floating controls are hidden, and
+external link destinations are printed after the link text.
+
 ## Colour and branding
 
 `assets/css/site.css` is the single source of truth for colour, declared as

@@ -111,6 +111,32 @@ h2 { font-size: var(--step-4); }
 h3 { font-size: var(--step-2); }
 h4 { font-size: var(--step-1); }
 
+/* Large display type needs tighter tracking to stop it looking loose, while
+   small headings read better slightly open. One blanket value makes both
+   wrong, so the tracking steps with the size. */
+h1 { letter-spacing: -0.032em; text-wrap: balance; }
+h2 { letter-spacing: -0.022em; text-wrap: balance; }
+h3 { letter-spacing: -0.012em; }
+.section-head p, .hero__lead { text-wrap: pretty; }
+
+/* ---------------------------------------------------------- utilities -- */
+/* A measure-capped lead paragraph, used above long-form sections. */
+.lede {
+  font-size: var(--step-1);
+  color: var(--ink-muted);
+  max-width: 62ch;
+}
+.muted { color: var(--ink-muted); }
+.eyebrow--gold { color: #8a6300; }
+
+/* Section divider that fades in from both edges rather than a hard rule. */
+.rule-fade {
+  height: 1px;
+  border: 0;
+  margin-block: var(--sp-7);
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+}
+
 p { max-width: 68ch; }
 
 ul, ol { padding-left: 1.25rem; }
@@ -364,6 +390,37 @@ ul, ol { padding-left: 1.25rem; }
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.25s ease, background-color 0.25s ease;
+}
+/* The header compacts once the page scrolls, so it stops competing with the
+   content beneath it. `data-scrolled` is set by site.js; without JS the header
+   simply stays in its resting state, which is the same design. */
+.site-header[data-scrolled="true"] {
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 1px 0 var(--border), 0 10px 30px -18px rgba(16, 27, 22, 0.35);
+}
+.site-header[data-scrolled="true"] .site-header__bar { min-height: 60px; }
+.site-header[data-scrolled="true"] .brand__logo { height: 38px; }
+.site-header__bar { transition: min-height 0.25s ease; }
+.brand__logo { transition: height 0.25s ease; }
+
+/* Reading-progress bar. Sits on the header's bottom edge and only appears once
+   the page has actually scrolled. */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--brand-600), var(--accent-600));
+  z-index: 200;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-header__bar,
+  .brand__logo { transition: none; }
 }
 .site-header__bar {
   display: flex;
@@ -387,6 +444,7 @@ ul, ol { padding-left: 1.25rem; }
 
 .nav { display: flex; align-items: center; gap: var(--sp-1); }
 .nav a {
+  position: relative;
   display: block;
   padding: 0.55rem 0.75rem;
   border-radius: var(--radius-sm);
@@ -397,6 +455,70 @@ ul, ol { padding-left: 1.25rem; }
 }
 .nav a:hover { background: var(--surface-2); text-decoration: none; }
 .nav a[aria-current="page"] { color: var(--brand-700); background: #e3f1eb; font-weight: 600; }
+
+/* Active-link underline. Grows from the left on hover so the nav feels
+   responsive without the background block shifting layout. */
+.nav a::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem; right: 0.75rem;
+  bottom: 0.28rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand-700);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.nav a:hover::after,
+.nav a[aria-current="page"]::after { transform: scaleX(1); }
+@media (prefers-reduced-motion: reduce) { .nav a::after { transition: none; } }
+
+/* Back-to-top. Appears only after the reader is well down the page, and is
+   hidden from assistive tech until then so it is not a mystery control. */
+.to-top {
+  position: fixed;
+  right: var(--sp-5);
+  bottom: var(--sp-5);
+  z-index: 90;
+  width: 44px; height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--brand-700);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+}
+.to-top[data-visible="true"] { opacity: 1; visibility: visible; transform: none; }
+.to-top:hover { background: var(--brand-600); color: #fff; border-color: var(--brand-600); }
+@media (prefers-reduced-motion: reduce) { .to-top { transition: none; } }
+
+/* Mobile action bar. On a phone the two things a visitor wants — get the app,
+   talk to us — are otherwise two taps away behind a hamburger. */
+.mobile-cta {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 95;
+  display: none;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+}
+.mobile-cta .btn { flex: 1; }
+@media (max-width: 620px) {
+  .mobile-cta { display: flex; }
+  /* Keep the bar from covering the end of the page. */
+  body { padding-bottom: 72px; }
+  .to-top { bottom: 84px; }
+}
 
 .header__actions { display: flex; align-items: center; gap: var(--sp-3); }
 
@@ -918,3 +1040,58 @@ tbody tr:last-child td { border-bottom: 0; }
   color: #93a29b;
 }
 .footer__bottom ul { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-4); padding: 0; }
+
+/* --------------------------------------------------------------- print -- */
+/* People print policy pages — to keep on file, to hand to an employer, or to
+   read offline. Without this the dark sections flood the page with ink and the
+   navigation and floating controls print as clutter. */
+@media print {
+  .site-header,
+  .site-footer,
+  .mobile-cta,
+  .to-top,
+  .scroll-progress,
+  .skip-link,
+  .nav,
+  .hero__aurora,
+  .hero__photo,
+  .ticker { display: none !important; }
+
+  /* Everything becomes black on white, including the dark sections. */
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11pt;
+    padding: 0 !important;
+  }
+  .section, .section--tint, .section--surface, .section--ink, .hero, .page-hero {
+    background: #fff !important;
+    color: #000 !important;
+    padding-block: 0.6cm !important;
+  }
+  .section--ink h2, .section--ink h3, .hero h1, .page-hero h1,
+  .section--ink p, .hero__lead, .hero__sub, .page-hero p { color: #000 !important; }
+
+  /* Reveal animations must not leave content invisible on paper. */
+  .reveal { opacity: 1 !important; transform: none !important; }
+
+  /* Cards lose their shadows and tinted washes, keeping only a hairline. */
+  .card, .faq details, .table-wrap, .notice, .photo-frame {
+    background: #fff !important;
+    box-shadow: none !important;
+    border: 1px solid #999 !important;
+    break-inside: avoid;
+  }
+  .card__icon, .photo-caption, .cta-band { background: #fff !important; color: #000 !important; }
+  .cta-band { border: 1px solid #999; }
+
+  /* Show the destination of every link that is not on this site. */
+  a { color: #000 !important; text-decoration: underline; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; word-break: break-all; }
+
+  /* Keep headings with the text that follows them. */
+  h1, h2, h3 { break-after: avoid; }
+  img { max-width: 100% !important; }
+  .photo, .photo-frame img { display: none; }
+  @page { margin: 1.6cm; }
+}

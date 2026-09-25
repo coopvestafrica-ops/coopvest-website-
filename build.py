@@ -14,12 +14,29 @@ from __future__ import annotations
 
 import hashlib
 import html
+import json
 import pathlib
 import re
 
 ROOT = pathlib.Path(__file__).parent
 PAGES_DIR = ROOT / "src" / "pages"
 SITE = "https://coopvest.africa"
+
+# The brand node every page carries. Kept here rather than duplicated into each
+# partial so the contact details cannot drift between pages.
+ORGANIZATION = {
+    "@type": "Organization",
+    "@id": f"{SITE}/#organization",
+    "name": "Coopvest Africa",
+    "url": f"{SITE}/",
+    "logo": f"{SITE}/assets/img/icon-512.png",
+    "description": (
+        "A digital cooperative platform helping salaried workers save consistently "
+        "and access affordable financing."
+    ),
+    "email": "coopvestafrica@gmail.com",
+    "areaServed": {"@type": "Country", "name": "Nigeria"},
+}
 
 SHELL_HEAD = """<!DOCTYPE html>
 <html lang="en">
@@ -52,6 +69,7 @@ SHELL_HEAD = """<!DOCTYPE html>
   <link rel="stylesheet" href="/assets/css/site.css" />
 {jsonld}</head>
 <body>
+  <div class="scroll-progress" data-scroll-progress aria-hidden="true"></div>
   <a class="skip-link" href="#main">Skip to main content</a>
 
   <header class="site-header">
@@ -138,6 +156,15 @@ SHELL_FOOT = """  </main>
       </div>
     </div>
   </footer>
+
+  <button class="to-top" data-to-top type="button" aria-label="Back to top" tabindex="-1" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <div class="mobile-cta" role="group" aria-label="Quick actions">
+    <a class="btn btn--ghost" href="/download/">Get the App</a>
+    <a class="btn btn--primary" href="/contact/">Get Started</a>
+  </div>
 
   <script src="/assets/js/site.js" defer></script>
 </body>
@@ -235,6 +262,78 @@ def add_webp_sources(document: str) -> str:
     return PHOTO_IMG.sub(wrap, document)
 
 
+FAQ_ITEM = re.compile(
+    r"<summary>(?P<q>.*?)</summary>\s*<div class=\"faq__body\">(?P<a>.*?)</div>",
+    re.DOTALL,
+)
+
+
+def faq_schema(body: str) -> dict[str, object] | None:
+    """Derive FAQPage structured data from the page's own <details> markup.
+
+    Reading the questions back out of the rendered body rather than asking the
+    author to restate them means the schema cannot fall out of step with the
+    visible copy — which is both a maintenance win and what the guidelines
+    require, since the markup must match what the reader sees.
+    """
+    items = []
+    for match in FAQ_ITEM.finditer(body):
+        question = html.unescape(re.sub(r"<[^>]+>", "", match.group("q"))).strip()
+        answer = html.unescape(re.sub(r"<[^>]+>", " ", match.group("a")))
+        answer = re.sub(r"\s+", " ", answer).strip()
+        if question and answer:
+            items.append(
+                {
+                    "@type": "Question",
+                    "name": question,
+                    "acceptedAnswer": {"@type": "Answer", "text": answer},
+                }
+            )
+    if not items:
+        return None
+    return {"@type": "FAQPage", "mainEntity": items}
+
+
+def structured_data(slug: str, url_path: str, meta: dict[str, str], body: str) -> str:
+    """Build the JSON-LD block for a page.
+
+    Every page gets the Organization node, because it is what search engines and
+    answer boxes use to resolve the brand, and a BreadcrumbList on interior pages
+    so the page's place in the hierarchy shows in results rather than a bare URL.
+    A page may still declare its own `jsonld` in the partial; that is emitted
+    alongside rather than instead, so nothing already written is lost.
+    """
+    graph: list[dict[str, object]] = [ORGANIZATION]
+
+    if slug not in {"home", "404"}:
+        title = html.unescape(meta.get("title", slug.title()))
+        # Page titles are written as "About Us — Coopvest Africa"; the crumb
+        # should read "About Us", so drop the brand suffix.
+        label = title.split(" — ")[0].strip()
+        graph.append(
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{SITE}/"},
+                    {"@type": "ListItem", "position": 2, "name": label, "item": f"{SITE}{url_path}"},
+                ],
+            }
+        )
+
+    blocks = [json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False)]
+
+    faq = faq_schema(body)
+    if faq:
+        blocks.append(json.dumps({"@context": "https://schema.org", **faq}, ensure_ascii=False))
+
+    if "jsonld" in meta:
+        blocks.append(meta["jsonld"])
+
+    return "".join(
+        f'  <script type="application/ld+json">\n  {block}\n  </script>\n' for block in blocks
+    )
+
+
 def build() -> None:
     partials = sorted(PAGES_DIR.glob("*.html"))
     if not partials:
@@ -257,9 +356,7 @@ def build() -> None:
             out_path = ROOT / slug / "index.html"
             url_path = f"/{slug}/"
 
-        jsonld = ""
-        if "jsonld" in meta:
-            jsonld = f'  <script type="application/ld+json">\n  {meta["jsonld"]}\n  </script>\n'
+        jsonld = structured_data(slug, url_path, meta, body)
 
         document = (
             SHELL_HEAD.format(

@@ -144,6 +144,58 @@
     items.forEach(function (el) { observer.observe(el); });
   }
 
+  /* -------------------------------------------------- scroll affordances -- */
+  // Three things that depend on scroll position: the header compacts, the
+  // reading-progress bar fills, and the back-to-top control appears. They share
+  // one rAF-throttled listener rather than three, and the work is skipped
+  // entirely when the reader prefers reduced motion (the header still compacts,
+  // because that is a layout change rather than animation).
+  function initScrollAffordances() {
+    var header = document.querySelector(".site-header");
+    var progress = document.querySelector("[data-scroll-progress]");
+    var toTop = document.querySelector("[data-to-top]");
+
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var y = window.scrollY || document.documentElement.scrollTop;
+      var doc = document.documentElement;
+
+      if (header) header.setAttribute("data-scrolled", String(y > 8));
+
+      if (progress) {
+        var scrollable = doc.scrollHeight - window.innerHeight;
+        var ratio = scrollable > 0 ? Math.min(y / scrollable, 1) : 0;
+        progress.style.transform = "scaleX(" + ratio + ")";
+      }
+
+      if (toTop) {
+        var show = y > window.innerHeight * 1.5;
+        toTop.setAttribute("data-visible", String(show));
+        // Keep it out of the tab order until it is actually shown.
+        toTop.setAttribute("tabindex", show ? "0" : "-1");
+        toTop.setAttribute("aria-hidden", String(!show));
+      }
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    update();
+
+    if (toTop) {
+      toTop.addEventListener("click", function () {
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+      });
+    }
+  }
+
   /* --------------------------------------------------------- form logic -- */
   // Validates client-side, then posts to /api/contact, which emails the enquiry.
   // Client validation is for fast feedback only — the endpoint validates again.
@@ -293,6 +345,7 @@
     initYear();
     initReveal();
     initCounters();
+    initScrollAffordances();
     initForms();
   });
 })();
