@@ -207,6 +207,34 @@ def version_assets(document: str) -> str:
     return re.sub(r"/assets/[A-Za-z0-9_./@-]+", replace, document)
 
 
+# A photo `<img>` whose file has a WebP sibling gets wrapped in a `<picture>`, so
+# browsers that support WebP take the smaller file and the rest fall back to the
+# JPEG. Doing it here keeps the page partials readable — an author writes a
+# normal `<img>` and does not have to remember the alternate format.
+PHOTO_IMG = re.compile(r'(?P<indent>[ \t]*)<img(?P<attrs>[^>]*?class="photo"[^>]*?)>', re.DOTALL)
+PHOTO_SRC = re.compile(r'src="(?P<src>/assets/img/[^"]+?)\.(?:jpg|jpeg|png)"')
+
+
+def add_webp_sources(document: str) -> str:
+    def wrap(match: re.Match[str]) -> str:
+        attrs = match.group("attrs")
+        src = PHOTO_SRC.search(attrs)
+        if not src:
+            return match.group(0)
+        webp = ROOT / (src.group("src").lstrip("/") + ".webp")
+        if not webp.is_file():
+            return match.group(0)
+        indent = match.group("indent")
+        return (
+            f'{indent}<picture>\n'
+            f'{indent}  <source srcset="{src.group("src")}.webp" type="image/webp" />\n'
+            f'{indent}  <img{attrs} />\n'
+            f'{indent}</picture>'
+        )
+
+    return PHOTO_IMG.sub(wrap, document)
+
+
 def build() -> None:
     partials = sorted(PAGES_DIR.glob("*.html"))
     if not partials:
@@ -246,6 +274,7 @@ def build() -> None:
             + "\n"
             + SHELL_FOOT
         )
+        document = add_webp_sources(document)
         document = version_assets(document)
 
         out_path.parent.mkdir(parents=True, exist_ok=True)

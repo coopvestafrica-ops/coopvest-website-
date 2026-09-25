@@ -646,6 +646,83 @@ tbody tr:last-child td { border-bottom: 0; }
 .stat__label { color: var(--ink-muted); font-size: var(--step--1); }
 .section--ink .stat__label { color: #a9b5af; }
 
+/* ------------------------------------------------------------- photos ---- */
+/* Photography is the one place the page is allowed to break the flat, bordered
+   card treatment — a real face carries more trust than another bordered box, so
+   these slots are rounded and cropped rather than framed. */
+.photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.photo-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.photo-frame .photo { border-radius: 0; }
+.photo-frame--4x3 { aspect-ratio: 4 / 3; }
+.photo-frame--4x5 { aspect-ratio: 4 / 5; }
+.photo-frame--16x9 { aspect-ratio: 16 / 9; }
+
+/* Some supplied artwork is a dark scene rather than a photo of people — a device
+   mockup on a black stage, for instance. On the default light frame that reads
+   as a hard black rectangle, so these slots take a matching dark surround and
+   the image blends into it instead. */
+.photo-frame--dark {
+  background: #0f1311;
+  border-color: #1a211d;
+}
+.photo-frame--dark .photo { background: #0f1311; }
+
+/* Caption sits on the image so the grid does not need an extra row. */
+.photo-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  background: linear-gradient(to top, rgba(15, 19, 17, 0.86), rgba(15, 19, 17, 0));
+  color: #ffffff;
+  font-size: var(--step--1);
+  font-weight: 600;
+}
+.photo-caption span { display: block; font-weight: 400; color: #cde5db; }
+
+/* Two-up photo strip. Collapses to one column on small screens. */
+.photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-5); }
+@media (max-width: 700px) { .photo-grid { grid-template-columns: 1fr; } }
+
+/* Hero backdrop: the photograph sits behind the gradient, dimmed enough that
+   the headline keeps its contrast. `--hero-photo` is set by the page. */
+.hero--photo { background-image: none; }
+.hero--photo .hero__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 32%;
+  opacity: 0.5;
+}
+.hero--photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(155deg, rgba(15, 19, 17, 0.94) 0%, rgba(26, 33, 29, 0.86) 52%, rgba(15, 61, 20, 0.90) 100%);
+}
+.hero--photo .hero__inner { z-index: 3; }
+.hero--photo::after { z-index: 2; }
+
+@media (max-width: 900px) {
+  .hero--photo .hero__photo { opacity: 0.42; }
+}
+
 /* ------------------------------------------------------------- motion ---- */
 /* Scroll reveal. `data-reveal` items are staggered by their index within the
    parent, set as an inline custom property by site.js, so no CSS delay table is

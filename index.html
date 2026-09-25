@@ -26,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/assets/css/site.css?v=ef1c64a506" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=90b55d4bbf" />
   <script type="application/ld+json">
   {"@context": "https://schema.org", "@type": "Organization", "name": "Coopvest Africa", "url": "https://coopvest.africa/", "logo": "https://coopvest.africa/assets/img/icon-512.png?v=6ef8d01023", "description": "A digital cooperative platform helping salaried workers save consistently and access affordable financing.", "email": "coopvestafrica@gmail.com", "areaServed": "NG"}
   </script>
@@ -66,7 +66,13 @@
 
   <main id="main">
 <!-- ================================================================ hero -->
-    <section class="hero">
+    <section class="hero hero--photo">
+      <img class="hero__photo"
+           src="/assets/img/hero-members.jpg?v=1dd4063fd4"
+           alt=""
+           aria-hidden="true"
+           width="1800" height="1012"
+           fetchpriority="high" decoding="async" />
       <div class="hero__aurora" aria-hidden="true"></div>
       <div class="wrap hero__inner">
         <div>
@@ -476,6 +482,46 @@
       </div>
     </div>
 
+    <!-- ===================================================== members ------ -->
+    <section class="section section--tight">
+      <div class="wrap">
+        <div class="section-head section-head--center reveal">
+          <span class="eyebrow">Who it is for</span>
+          <h2>Salaried workers, saving together</h2>
+          <p>Coopvest is built for the people who keep institutions running — and for the employers who want to look after them.</p>
+        </div>
+
+        <div class="photo-grid reveal">
+          <figure class="photo-frame photo-frame--4x3" style="margin:0">
+            <picture>
+              <source srcset="/assets/img/community-team.webp?v=2485cc1c70" type="image/webp" />
+              <img class="photo"
+                 src="/assets/img/community-team.jpg?v=52bceddd40"
+                 alt="A group of colleagues talking together in an office."
+                 loading="lazy" decoding="async" width="1200" height="900" / />
+            </picture>
+            <figcaption class="photo-caption">
+              Members and colleagues
+              <span>Saving through a cooperative they can see into.</span>
+            </figcaption>
+          </figure>
+          <figure class="photo-frame photo-frame--4x3" style="margin:0">
+            <picture>
+              <source srcset="/assets/img/planning-couple.webp?v=61ac0296bb" type="image/webp" />
+              <img class="photo"
+                 src="/assets/img/planning-couple.jpg?v=04478ee463"
+                 alt="A couple reviewing their finances together."
+                 loading="lazy" decoding="async" width="1200" height="900" / />
+            </picture>
+            <figcaption class="photo-caption">
+              Planning, not guessing
+              <span>Statements and balances you can actually read.</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================================== employer partnership -->
     <section class="section section--surface">
       <div class="wrap split split--media">
@@ -529,10 +575,16 @@
             Android only for now — an iPhone version is in progress.
           </p>
         </div>
-        <div class="reveal media-frame">
-          <img src="/assets/img/illustration-app.svg?v=7260fb0149"
-               alt="The Coopvest member app showing a savings balance of &#8358;1,284,500, a six-month contribution growth chart and recent activity including a salary contribution, a loan repayment and a pending KYC verification."
-               loading="lazy" decoding="async" width="340" height="680" />
+        <div class="reveal">
+          <div class="photo-frame photo-frame--4x5 photo-frame--dark">
+            <picture>
+              <source srcset="/assets/img/app-mockup.webp?v=462143c262" type="image/webp" />
+              <img class="photo"
+                 src="/assets/img/app-mockup.jpg?v=49a6c87a31"
+                 alt="The Coopvest member app running on a phone, showing the member dashboard."
+                 loading="lazy" decoding="async" width="760" height="950" / />
+            </picture>
+          </div>
         </div>
       </div>
     </section>

@@ -54,6 +54,46 @@ Because the asset URL GitHub returns is signed and time-limited, the handler
 sends a 302 with `no-store` — the browser must re-resolve through the handler
 rather than caching the signed target.
 
+## Photography
+
+Originals are uploaded to `download/`. They arrive large and mislabelled — every
+`coopvest-*.jpg` is actually PNG data under a `.jpg` extension, which is the wrong
+format for a photograph and about five times the necessary size. Never serve
+them directly.
+
+`tools/make_photo_assets.py` re-encodes each one to the size its slot needs and
+writes both a JPEG fallback and a WebP into `assets/img/`. Roughly 4–8 MB per
+source becomes 24–150 KB. Run it after adding or replacing a photo:
+
+```bash
+python3 tools/make_photo_assets.py
+```
+
+Each entry in `PHOTOS` carries a vertical `bias` for the crop. Photographs of
+people crop badly from the centre — a centre crop of a standing subject cuts off
+heads — so the bias keeps the crop window towards the upper part of the frame
+where the faces are. Most of the supplied photos already match their target
+aspect and are only scaled; two are cropped horizontally, evenly from each side.
+
+Place a photo in a page with the `photo` class and a `photo-frame` wrapper:
+
+```html
+<div class="photo-frame photo-frame--4x3">
+  <img class="photo" src="/assets/img/community-team.jpg" alt="…" width="1200" height="900" />
+</div>
+```
+
+`build.py` wraps any such `<img>` in a `<picture>` with a WebP `<source>` when a
+`.webp` sibling exists, so authors write a plain `<img>` and browsers that support
+WebP get the smaller file. Add `photo-frame--dark` for artwork that is a dark
+scene rather than a photo of people (the device mockup), so it does not read as a
+black rectangle on a light border.
+
+Photographs are the one place the design breaks its flat bordered-card rule — a
+real face carries more trust than another bordered box. Keep them out of the
+hero unless the overlay is dark enough; white text over an undimmed photo will
+fail contrast.
+
 ## Colour and branding
 
 `assets/css/site.css` is the single source of truth for colour, declared as

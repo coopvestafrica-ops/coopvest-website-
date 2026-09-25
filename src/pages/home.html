@@ -5,7 +5,13 @@ robots: index, follow
 jsonld: {"@context": "https://schema.org", "@type": "Organization", "name": "Coopvest Africa", "url": "https://coopvest.africa/", "logo": "https://coopvest.africa/assets/img/icon-512.png", "description": "A digital cooperative platform helping salaried workers save consistently and access affordable financing.", "email": "coopvestafrica@gmail.com", "areaServed": "NG"}
 -->
 <!-- ================================================================ hero -->
-    <section class="hero">
+    <section class="hero hero--photo">
+      <img class="hero__photo"
+           src="/assets/img/hero-members.jpg"
+           alt=""
+           aria-hidden="true"
+           width="1800" height="1012"
+           fetchpriority="high" decoding="async" />
       <div class="hero__aurora" aria-hidden="true"></div>
       <div class="wrap hero__inner">
         <div>
@@ -415,6 +421,40 @@ jsonld: {"@context": "https://schema.org", "@type": "Organization", "name": "Coo
       </div>
     </div>
 
+    <!-- ===================================================== members ------ -->
+    <section class="section section--tight">
+      <div class="wrap">
+        <div class="section-head section-head--center reveal">
+          <span class="eyebrow">Who it is for</span>
+          <h2>Salaried workers, saving together</h2>
+          <p>Coopvest is built for the people who keep institutions running — and for the employers who want to look after them.</p>
+        </div>
+
+        <div class="photo-grid reveal">
+          <figure class="photo-frame photo-frame--4x3" style="margin:0">
+            <img class="photo"
+                 src="/assets/img/community-team.jpg"
+                 alt="A group of colleagues talking together in an office."
+                 loading="lazy" decoding="async" width="1200" height="900" />
+            <figcaption class="photo-caption">
+              Members and colleagues
+              <span>Saving through a cooperative they can see into.</span>
+            </figcaption>
+          </figure>
+          <figure class="photo-frame photo-frame--4x3" style="margin:0">
+            <img class="photo"
+                 src="/assets/img/planning-couple.jpg"
+                 alt="A couple reviewing their finances together."
+                 loading="lazy" decoding="async" width="1200" height="900" />
+            <figcaption class="photo-caption">
+              Planning, not guessing
+              <span>Statements and balances you can actually read.</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
     <!-- ============================================== employer partnership -->
     <section class="section section--surface">
       <div class="wrap split split--media">
@@ -468,10 +508,13 @@ jsonld: {"@context": "https://schema.org", "@type": "Organization", "name": "Coo
             Android only for now — an iPhone version is in progress.
           </p>
         </div>
-        <div class="reveal media-frame">
-          <img src="/assets/img/illustration-app.svg"
-               alt="The Coopvest member app showing a savings balance of &#8358;1,284,500, a six-month contribution growth chart and recent activity including a salary contribution, a loan repayment and a pending KYC verification."
-               loading="lazy" decoding="async" width="340" height="680" />
+        <div class="reveal">
+          <div class="photo-frame photo-frame--4x5 photo-frame--dark">
+            <img class="photo"
+                 src="/assets/img/app-mockup.jpg"
+                 alt="The Coopvest member app running on a phone, showing the member dashboard."
+                 loading="lazy" decoding="async" width="760" height="950" />
+          </div>
         </div>
       </div>
     </section>
