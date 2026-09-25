@@ -94,6 +94,44 @@ real face carries more trust than another bordered box. Keep them out of the
 hero unless the overlay is dark enough; white text over an undimmed photo will
 fail contrast.
 
+## Responsive
+
+The layout is fluid, not breakpoint-driven. Two rules do most of the work:
+
+- **`minmax(0, …)` on every grid track, plus `min-width: 0` on grid and flex
+  children.** A grid child defaults to `min-width: auto`, so one wide child — a
+  five-column rate table, a long unbroken string — expands its track and pushes
+  the whole page sideways. This was the cause of a real bug: `.split` used
+  `1.05fr 0.95fr`, so the loans comparison table made every phone page scroll
+  horizontally.
+- **Fluid display type and section spacing.** The steps at `--step-3` and below
+  are fixed, because body copy should not shrink on a small screen; `--step-4`,
+  `--step-5` and `--sp-7..9` are `clamp()`s so headlines and section rhythm
+  scale instead of jumping at a breakpoint.
+
+Two audits cover this, both needing a running server:
+
+```bash
+python3 -m http.server 8080 &
+python3 tools/audit_responsive.py    # horizontal overflow, 15 pages x 9 widths
+python3 tools/audit_usability.py     # tap targets, text size, table scrolling
+```
+
+`audit_responsive.py` reports any element wider than the viewport and the
+document `scrollWidth`, which is the definitive test for a sideways-scrolling
+page. `audit_usability.py` fails on anything below the WCAG 2.2 AA 24x24
+minimum and merely advises below the stricter 44px, so a text link whose width
+matches its label is not reported as broken. Both need Playwright
+(`pip install playwright && python3 -m playwright install chromium`).
+
+Other mobile specifics worth keeping: the hero photo and the decorative aurora
+are both capped to the container so they cannot widen the page; the skip link
+hides with `clip-path` rather than `left: -9999px`, because the latter really
+does extend the scrollable area; form fields are set to 16px so iOS Safari does
+not zoom the page on focus; the rate table keeps its first column sticky while
+the rest scrolls; and below 560px the header's two calls to action move into the
+sticky bar at the foot of the page, where a thumb can reach them.
+
 ## Structured data
 
 `build.py` generates the JSON-LD for every page rather than each partial

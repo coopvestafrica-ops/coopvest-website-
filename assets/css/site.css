@@ -34,26 +34,30 @@
   --danger: #dc2626;      /* app error */
   --danger-bg: #fee2e2;   /* app errorSurface */
 
-  /* Type */
+  /* Type. The steps below `--step-3` are fixed, which is correct — body copy
+     should not shrink on a small screen. The display sizes are fluid so the
+     headline scales with the viewport instead of jumping at a breakpoint. */
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --step--1: 0.875rem;
   --step-0: 1rem;
   --step-1: 1.125rem;
   --step-2: 1.375rem;
   --step-3: 1.75rem;
-  --step-4: clamp(2rem, 1.4rem + 2.4vw, 2.75rem);
-  --step-5: clamp(2.4rem, 1.6rem + 3.4vw, 3.6rem);
+  --step-4: clamp(1.6rem, 1.2rem + 2.2vw, 2.75rem);
+  --step-5: clamp(1.95rem, 1.3rem + 3.6vw, 3.6rem);
 
-  /* Space */
+    /* Space. The small steps are fixed; the large ones scale with the viewport so
+     a phone does not carry desktop-sized gaps and a large screen does not feel
+     cramped. */
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
   --sp-4: 1rem;
   --sp-5: 1.5rem;
   --sp-6: 2rem;
-  --sp-7: 3rem;
-  --sp-8: 4rem;
-  --sp-9: 6rem;
+  --sp-7: clamp(2rem, 1.4rem + 3vw, 3rem);
+  --sp-8: clamp(2.5rem, 1.6rem + 4.2vw, 4rem);
+  --sp-9: clamp(3rem, 1.8rem + 6vw, 6rem);
 
   /* Shape */
   --radius-sm: 0.5rem;
@@ -95,9 +99,17 @@ body {
   font-size: var(--step-0);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Belt and braces: if some element does end up wider than the viewport, the
+     page must not scroll sideways on a phone. Anything deliberately wider gets
+     its own scroll container (see .table-wrap). */
+  overflow-x: hidden;
 }
 
 img, svg, video { display: block; max-width: 100%; height: auto; }
+
+/* Long unbroken strings — URLs in prose, a long email address, a reference
+   number — otherwise push their container wider than the screen. */
+p, li, dd, dt, td, th, caption, figcaption, a, code { overflow-wrap: break-word; }
 
 a { color: var(--brand-700); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -147,17 +159,32 @@ ul, ol { padding-left: 1.25rem; }
   border-radius: 4px;
 }
 
+/* The skip link must be off-screen but must not extend the scrollable area.
+   `left: -9999px` does exactly that and makes the document wider than the
+   viewport on a phone, so it is hidden with a clip and a 1px box instead —
+   still focusable and still revealed on focus. */
 .skip-link {
   position: absolute;
-  left: -9999px;
   top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
   z-index: 200;
   background: var(--surface);
-  padding: var(--sp-3) var(--sp-4);
+  padding: 0;
   border-radius: 0 0 var(--radius-sm) 0;
   box-shadow: var(--shadow-lg);
 }
-.skip-link:focus { left: 0; }
+.skip-link:focus {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  padding: var(--sp-3) var(--sp-4);
+}
 
 .visually-hidden {
   position: absolute;
@@ -215,12 +242,18 @@ ul, ol { padding-left: 1.25rem; }
   .grid--2, .grid--3, .grid--4 { grid-template-columns: 1fr; }
 }
 
+/* Grid children default to `min-width: auto`, which means a wide child — a
+   table, a long unbroken string, a fixed-size image — expands its track and
+   pushes the whole page sideways. `minmax(0, …)` on every track caps that, and
+   the explicit `min-width: 0` covers the flex layouts too. This is the single
+   most common cause of a phone page scrolling horizontally. */
 .split {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: var(--sp-7);
   align-items: center;
 }
+.split > * { min-width: 0; }
 @media (max-width: 900px) {
   .split { grid-template-columns: 1fr; gap: var(--sp-6); }
 }
@@ -524,7 +557,8 @@ ul, ol { padding-left: 1.25rem; }
 
 .nav-toggle {
   display: none;
-  width: 42px; height: 42px;
+  /* 44px is the comfortable minimum touch target; 42 was just under it. */
+  width: 44px; height: 44px;
   align-items: center;
   justify-content: center;
   background: var(--surface);
@@ -560,15 +594,32 @@ ul, ol { padding-left: 1.25rem; }
     display: none;
   }
   .nav[data-open="true"] { display: flex; }
-  .nav a { padding: 0.8rem 0.5rem; border-bottom: 1px solid var(--border); border-radius: 0; }
+  .nav a {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0.8rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+  }
+  /* The underline affordance is for the horizontal bar only; in the stacked
+     menu the full-width row is the affordance. */
+  .nav a::after { display: none; }
   .nav a:last-child { border-bottom: 0; }
   .header__actions .btn--ghost { display: none; }
 }
 @media (max-width: 560px) {
   .brand__tag { display: none; }
   .site-header__bar { gap: var(--sp-3); }
-  .header__actions .btn--ghost { display: none; }
-  .header__actions .btn { padding: 0.6rem 0.95rem; font-size: 0.875rem; }
+  /* On the narrowest screens the header keeps only the logo and the menu
+     button; the two calls to action move into the sticky bar at the foot of
+     the page, which is easier to reach with a thumb. */
+  .header__actions { display: none; }
+  .brand { min-height: 44px; }
+}
+@media (max-width: 380px) {
+  .brand__logo { height: 38px; }
+  .wrap { padding-inline: var(--sp-4); }
 }
 
 /* ------------------------------------------------------------- steps --- */
@@ -616,10 +667,42 @@ ul, ol { padding-left: 1.25rem; }
 }
 
 /* --------------------------------------------------------------- table -- */
-.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  /* A five-column rate table cannot fit a phone, so it scrolls. These shadows
+     appear only while there is more table off-screen, which tells the reader the
+     content continues instead of leaving them to discover it by accident. */
+  background-image:
+    linear-gradient(to right, var(--surface), rgba(255, 255, 255, 0)),
+    linear-gradient(to left, var(--surface), rgba(255, 255, 255, 0)),
+    radial-gradient(farthest-side at 0 50%, rgba(16, 27, 22, 0.14), transparent),
+    radial-gradient(farthest-side at 100% 50%, rgba(16, 27, 22, 0.14), transparent);
+  background-position: 0 0, 100% 0, 0 0, 100% 0;
+  background-repeat: no-repeat;
+  background-size: 36px 100%, 36px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
 caption { text-align: left; padding: var(--sp-4) var(--sp-4) 0; color: var(--ink-muted); font-size: var(--step--1); }
 th, td { text-align: left; padding: 0.85rem var(--sp-4); border-bottom: 1px solid var(--border); vertical-align: top; }
+
+/* On a phone the first column stays put while the rates scroll, so the reader
+   never loses track of which product a row belongs to. */
+@media (max-width: 700px) {
+  th:first-child, td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--surface);
+    box-shadow: 1px 0 0 var(--border);
+  }
+  thead th:first-child { background: var(--surface-2); }
+  th, td { padding: 0.7rem var(--sp-3); font-size: 0.875rem; }
+}
 thead th { background: var(--surface-2); font-weight: 600; color: var(--ink); white-space: nowrap; }
 tbody tr:last-child td { border-bottom: 0; }
 
@@ -697,6 +780,10 @@ tbody tr:last-child td { border-bottom: 0; }
 .field textarea {
   width: 100%;
   padding: 0.72rem 0.85rem;
+  /* 16px is the threshold below which iOS Safari zooms the whole page when a
+     field takes focus, which is disorienting on a form. */
+  font-size: max(1rem, 16px);
+  min-height: 48px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -753,12 +840,18 @@ tbody tr:last-child td { border-bottom: 0; }
 .breadcrumb { font-size: var(--step--1); color: var(--ink-muted); margin-bottom: var(--sp-4); }
 .breadcrumb ol { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-2); padding: 0; }
 .breadcrumb li + li::before { content: "/"; margin-right: var(--sp-2); color: var(--ink-soft); }
+/* Breadcrumb links are small text, so they get a taller hit area than the line
+   box alone would give — the last thing a thumb should miss is the way back. */
+.breadcrumb a { display: inline-block; padding-block: 0.4rem; }
 .page-hero .breadcrumb, .page-hero .breadcrumb a { color: #cde5db; }
-.page-hero .breadcrumb li + li::before { color:   color: rgba(205, 229, 219, 0.6); }
+.page-hero .breadcrumb li + li::before { color: rgba(205, 229, 219, 0.6); }
 
 .contact-card { display: grid; gap: var(--sp-2); }
 .contact-card dt { font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); }
 .contact-card dd { margin: 0 0 var(--sp-3); font-size: var(--step-1); }
+/* The contact links are the reason the page exists, so they get a full-height
+   tap target rather than a bare line of text. */
+.contact-card dd a { display: inline-block; padding-block: 0.4rem; min-height: 44px; }
 
 .stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-5); }
 @media (max-width: 620px) { .stat-row { grid-template-columns: 1fr; } }
@@ -885,7 +978,11 @@ tbody tr:last-child td { border-bottom: 0; }
 .hero__aurora {
   position: absolute;
   inset: -30% -10% auto auto;
-  width: 760px; height: 760px;
+  /* Fluid, and capped to the container, so the decorative glow can never widen
+     the page on a narrow screen. */
+  width: min(760px, 100%);
+  aspect-ratio: 1;
+  height: auto;
   pointer-events: none;
   background:
     radial-gradient(circle at 30% 30%, rgba(46, 125, 50, 0.30), transparent 58%),
@@ -1027,6 +1124,13 @@ tbody tr:last-child td { border-bottom: 0; }
 .site-footer a:hover { color: #fff; }
 .site-footer p { color: #93a29b; font-size: 0.9375rem; }
 .footer__links { list-style: none; padding: 0; display: grid; gap: var(--sp-2); font-size: 0.9375rem; }
+/* Footer links are a primary way to reach policy and product pages, so they get
+   a real tap height rather than the 19px a bare line of text gives. */
+.footer__links a {
+  display: inline-block;
+  padding-block: 0.5rem;
+  min-height: 44px;
+}
 .footer__brand { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-4); }
 .footer__logo { height: 66px; width: auto; }
 .footer__brand .brand__name { color: #fff; }
@@ -1040,6 +1144,7 @@ tbody tr:last-child td { border-bottom: 0; }
   color: #93a29b;
 }
 .footer__bottom ul { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-4); padding: 0; }
+.footer__bottom a { display: inline-block; padding-block: 0.45rem; min-height: 44px; }
 
 /* --------------------------------------------------------------- print -- */
 /* People print policy pages — to keep on file, to hand to an employer, or to
