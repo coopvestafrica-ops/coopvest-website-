@@ -23,13 +23,13 @@ python3 -m http.server 8080 &
 python3 tools/check_links.py
 ```
 
-Run `npm install` before `npm test` — `nodemailer` is required by the test
+Run `npm install` before `npm test`, `nodemailer` is required by the test
 harness and is not vendored.
 
 ## Editing pages
 
 Edit `src/pages/*.html`, never the generated `index.html` / `<slug>/index.html`
-files directly — the next build overwrites them. Generated output is committed,
+files directly, the next build overwrites them. Generated output is committed,
 so a content change needs a rebuild *and* the rebuilt files staged together.
 
 A page partial begins with an HTML comment of `key: value` lines
@@ -51,27 +51,27 @@ GitHub API rate limit, and falls back to the releases page rather than
 dead-ending the visitor if the API is unreachable.
 
 Because the asset URL GitHub returns is signed and time-limited, the handler
-sends a 302 with `no-store` — the browser must re-resolve through the handler
+sends a 302 with `no-store`, the browser must re-resolve through the handler
 rather than caching the signed target.
 
 ## Photography
 
-Originals are uploaded to `download/`. They arrive large and mislabelled — every
+Originals are uploaded to `download/`. They arrive large and mislabelled: every
 `coopvest-*.jpg` is actually PNG data under a `.jpg` extension, which is the wrong
 format for a photograph and about five times the necessary size. Never serve
 them directly.
 
 `tools/make_photo_assets.py` re-encodes each one to the size its slot needs and
-writes both a JPEG fallback and a WebP into `assets/img/`. Roughly 4–8 MB per
-source becomes 24–150 KB. Run it after adding or replacing a photo:
+writes both a JPEG fallback and a WebP into `assets/img/`. Roughly 4-8 MB per
+source becomes 24-150 KB. Run it after adding or replacing a photo:
 
 ```bash
 python3 tools/make_photo_assets.py
 ```
 
 Each entry in `PHOTOS` carries a vertical `bias` for the crop. Photographs of
-people crop badly from the centre — a centre crop of a standing subject cuts off
-heads — so the bias keeps the crop window towards the upper part of the frame
+people crop badly from the centre, a centre crop of a standing subject cuts off
+heads, so the bias keeps the crop window towards the upper part of the frame
 where the faces are. Most of the supplied photos already match their target
 aspect and are only scaled; two are cropped horizontally, evenly from each side.
 
@@ -89,7 +89,7 @@ WebP get the smaller file. Add `photo-frame--dark` for artwork that is a dark
 scene rather than a photo of people (the device mockup), so it does not read as a
 black rectangle on a light border.
 
-Photographs are the one place the design breaks its flat bordered-card rule — a
+Photographs are the one place the design breaks its flat bordered-card rule, a
 real face carries more trust than another bordered box. Keep them out of the
 hero unless the overlay is dark enough; white text over an undimmed photo will
 fail contrast.
@@ -99,8 +99,8 @@ fail contrast.
 The layout is fluid, not breakpoint-driven. Two rules do most of the work:
 
 - **`minmax(0, …)` on every grid track, plus `min-width: 0` on grid and flex
-  children.** A grid child defaults to `min-width: auto`, so one wide child — a
-  five-column rate table, a long unbroken string — expands its track and pushes
+  children.** A grid child defaults to `min-width: auto`, so one wide child, a
+  five-column rate table, a long unbroken string, expands its track and pushes
   the whole page sideways. This was the cause of a real bug: `.split` used
   `1.05fr 0.95fr`, so the loans comparison table made every phone page scroll
   horizontally.
@@ -137,24 +137,23 @@ sticky bar at the foot of the page, where a thumb can reach them.
 The product has two contribution routes, and the copy must always reflect both.
 The mobile app's own wording is the reference:
 
-- **Salary Deduction** — the employer deducts each month and remits. Requires
+- **Salary Deduction**: the employer deducts each month and remits. Requires
   employment details. For employees of a partner employer or cooperative.
-- **Direct Deposit** — the member pays by bank transfer, card or USSD. No
+- **Direct Deposit**: the member pays by bank transfer, card or USSD. No
   employment details needed. For everyone not on a partner payroll, including
   the self-employed.
 
 A member can switch between them from the app's Membership screen.
 
 This matters because the site originally described the audience as "salaried
-workers" only — thirteen places — which excluded every direct depositor, and the
+workers" only (thirteen places), which excluded every direct depositor, and the
 "Who can join" FAQ actively told them they could not. When writing copy, test it
 against both routes: "salaried workers and direct savers" rather than "salaried
 workers". Wording that describes the salary route specifically (payroll cycles,
 remittance, employer authorisation) is fine and should stay as it is.
 
 The contact form's topic options are mirrored in an allowlist in
-`api/contact.js`, and `tools/check_topics.py` fails the build if the two drift —
-a mismatch makes the form reject every submission regardless of what the visitor
+`api/contact.js`, and `tools/check_topics.py` fails the build if the two drift. A mismatch makes the form reject every submission regardless of what the visitor
 picks. The build runs it automatically.
 
 ## Structured data
@@ -167,13 +166,13 @@ carrying its own, so the brand details cannot drift apart:
 - a `FAQPage` on any page containing `<details>`/`faq__body` markup
 
 The FAQ schema is *derived* from the rendered questions and answers, so the
-markup always matches what the reader sees — which is what the search guidelines
+markup always matches what the reader sees, which is what the search guidelines
 require, and it means editing the visible copy updates the schema automatically.
 A partial may still declare its own `jsonld:` line; that is emitted alongside the
 generated blocks, not instead of them.
 
 If you change the contact address or brand description, change it in
-`ORGANIZATION` — not in each page.
+`ORGANIZATION`, not in each page.
 
 ## Navigation and scroll behaviour
 
@@ -189,7 +188,7 @@ back-to-top button moves up to clear it.
 ## Print
 
 There is a `@media print` block at the end of `site.css`. Policy and legal pages
-get printed — to keep on file or hand to an employer — so the dark sections are
+get printed, to keep on file or hand to an employer, so the dark sections are
 forced to black on white, the navigation and floating controls are hidden, and
 external link destinations are printed after the link text.
 
@@ -199,41 +198,39 @@ external link destinations are printed after the link text.
 custom properties under `:root`. The palette is taken from the Coopvest mobile
 app (emerald + gold) so the site and the app read as one product:
 
-- `--brand-600/700/800` — `#1b5e20` / `#2e7d32` / `#0f3d14`
-- `--accent-600/700` — `#f2b705` / `#dba400` (gold; dark text on gold via `--on-accent`)
+- `--brand-600/700/800`, `#1b5e20` / `#2e7d32` / `#0f3d14`
+- `--accent-600/700`, `#f2b705` / `#dba400` (gold; dark text on gold via `--on-accent`)
 - Surfaces `--bg`, `--surface`, `--border`; text `--ink`, `--ink-muted`
 
-Keep every colour a token. Gold is an accent, reserved for one action per view —
-white text on gold is only 1.82:1 and fails WCAG AA, so gold fills must use
+Keep every colour a token. Gold is an accent, reserved for one action per view. White text on gold is only 1.82:1 and fails WCAG AA, so gold fills must use
 `--on-accent`. Prefer grepping for stray hex literals after a palette change;
 several one-off values (deep navy section backgrounds, badge washes) were
 originally hardcoded outside the token block.
 
-`build.py` sets `<meta name="theme-color">` and `site.webmanifest` mirrors it —
-update those alongside the CSS.
+`build.py` sets `<meta name="theme-color">` and `site.webmanifest` mirrors it. Update those alongside the CSS.
 
 ## Logo and icon assets
 
 `tools/make_logo_assets.py` derives every logo and icon the site ships from
-`assets/brand/coopvest-mark.png` — there is one source image, not several. That
+`assets/brand/coopvest-mark.png`, there is one source image, not several. That
 mark is byte-identical to the mobile app's
 `assets/images/splash-logo-transparent.png` and to the copy uploaded under
 `download/`, so the header, footer, favicons, app icons, About page and social
-card all trace back to the same file. Do not recolour the mark — it is shared
+card all trace back to the same file. Do not recolour the mark, it is shared
 app artwork.
 
 The original `coopvest-lockup.jpg` scan is kept as supplied artwork but is no
 longer used for any output; its 96px render was visibly soft. If you need to
 re-derive anything, use the mark.
 
-The mark stacks four bands — emblem, "COOPVEST AFRICA" wordmark, then two
+The mark stacks four bands, emblem, "COOPVEST AFRICA" wordmark, then two
 tagline lines. The header/footer lockup takes the first two (y < 392), because
 the baked-in tagline is unreadable at header size and the shell already renders
 "Building Wealth Together" as live text. The `emblem` crop feeds `logo-mark.png`
 for external/partner use.
 
 If you change a logo's crop or dimensions, update the `width`/`height`
-attributes on the `<img>` tags in `build.py` — they are hardcoded and were left
+attributes on the `<img>` tags in `build.py`, they are hardcoded and were left
 stale once already, which reserves the wrong aspect ratio before the image loads.
 The current lockup is 139x96.
 
@@ -245,10 +242,10 @@ way.
 ## Motion and accessibility
 
 Animation is decoration, never information. Every animated element must degrade
-under `prefers-reduced-motion: reduce` — the CSS collapses `.reveal` and the
+under `prefers-reduced-motion: reduce`, the CSS collapses `.reveal` and the
 ticker, and `initReveal` / `initCounters` in `assets/js/site.js` check the media
 query and render final values immediately. The page must also work with
 JavaScript disabled; `site.js` is progressive enhancement only.
 
-The contact form's client validation is for fast feedback only — `api/contact`
+The contact form's client validation is for fast feedback only, `api/contact`
 validates again server-side.

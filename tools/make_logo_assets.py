@@ -35,7 +35,7 @@ OUT = ROOT / "assets" / "img"
 OUT.mkdir(parents=True, exist_ok=True)
 
 INK_900 = (15, 19, 17)          # app darkBackground
-GRADIENT_END = (15, 61, 20)     # app primaryDark — gradient terminates in brand green
+GRADIENT_END = (15, 61, 20)     # app primaryDark, gradient terminates in brand green
 
 
 def silhouette(image: Image.Image, shade: tuple[int, int, int] = (255, 255, 255)) -> Image.Image:
@@ -114,9 +114,9 @@ def save_optimised(image: Image.Image, path: pathlib.Path, colours: int = 256) -
 def main() -> None:
     # Every output derives from the official transparent PNG mark. The mark stacks
     # four bands: the emblem, the "COOPVEST AFRICA" wordmark, then two tagline
-    # lines. The header/footer lockup wants the first two — the baked-in tagline
+    # lines. The header/footer lockup wants the first two, the baked-in tagline
     # is far too small to read at header size and the shell renders it as live
-    # text — while the share card has room for the whole thing.
+    # text, while the share card has room for the whole thing.
     mark_full = Image.open(MARK).convert("RGBA")
     mark_trimmed = mark_full.crop(mark_full.getbbox())
 
@@ -136,7 +136,7 @@ def main() -> None:
     save_optimised(fit_height(silhouette(emblem), 160), OUT / "logo-mark-white.png")
 
     # Icons come from the official mark. At 16px the mark's blue-and-green detail
-    # muddies against a dark browser chrome, so it sits on a white rounded tile —
+    # muddies against a dark browser chrome, so it sits on a white rounded tile, 
     # the same treatment as the app's own launcher icon, which keeps the favicon
     # consistent with the app on the member's home screen.
     mark = Image.open(MARK).convert("RGBA").crop(
@@ -169,7 +169,7 @@ def main() -> None:
 
     # Social share card: brand gradient, the lockup on a white panel, copy. The
     # panel is sized from the artwork so the headline below can never collide
-    # with it — the positions are derived, not hand-tuned.
+    # with it, the positions are derived, not hand-tuned.
     og = gradient((1200, 630)).convert("RGBA")
     logo_og = fit_height(header_lockup, 150)
     panel_pad = 40

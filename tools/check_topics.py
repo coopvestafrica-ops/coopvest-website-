@@ -3,7 +3,7 @@
 
 The form's <select> is authored in src/pages/contact.html and the server-side
 allowlist lives in api/contact.js. Editing one without the other means the form
-silently rejects every submission — the visitor sees "Please choose what your
+silently rejects every submission, and the visitor sees "Please choose what your
 message is about" no matter what they pick. Run this as part of the build.
 
     python3 tools/check_topics.py

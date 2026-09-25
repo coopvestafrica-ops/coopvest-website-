@@ -1,4 +1,4 @@
-# Coopvest Africa — corporate website
+# Coopvest Africa, corporate website
 
 The public information and acquisition site for Coopvest Africa: who we are, how
 the platform works, and how to join or partner with us.
@@ -21,13 +21,13 @@ files, so it loads fast, ranks well, and can be hosted anywhere.
 ## Layout
 
 ```
-index.html              generated — do not edit
-about/index.html        generated — do not edit
+index.html              generated, do not edit
+about/index.html        generated, do not edit
 …
 src/pages/*.html        source of truth: one partial per page (body + metadata)
 assets/css/site.css     design system (tokens, layout, components)
 assets/js/site.js       navigation, scroll reveal, form submission
-assets/img/             logo and icon assets (generated — see tools/)
+assets/img/             logo and icon assets (generated, see tools/)
 api/contact.js          serverless handler that emails contact-form enquiries
 build.py                wraps each partial in the shared shell
 tools/make_logo_assets.py  derives web logos/icons from the official artwork
@@ -61,7 +61,7 @@ Current products (rate, tenure, savings multiple):
 | Premium Loan | 14.0% | 24 months | 4× savings |
 | Maxi Loan | 19.0% | 36 months | 5× savings |
 
-Interest is a flat charge over the tenure — `total = amount + (amount × rate)` —
+Interest is a flat charge over the tenure, `total = amount + (amount × rate)`,
 not compounding. Every loan requires **3 guarantors**.
 
 ## App download
@@ -107,10 +107,10 @@ pages live at `/about/` rather than `/about`. Keep that convention when linking.
 The official artwork is committed under `assets/brand/`, so the build never
 reaches outside the repository:
 
-- `coopvest-mark.png` — the square mark, used for the favicon and icon set. This
+- `coopvest-mark.png`, the square mark, used for the favicon and icon set. This
   is the artwork supplied for the site and is byte-identical to the app's splash
   logo.
-- `coopvest-lockup.jpg` — mark plus wordmark on white, used for the header logo
+- `coopvest-lockup.jpg`, mark plus wordmark on white, used for the header logo
   and the social card.
 
 `tools/make_logo_assets.py` turns those into every web asset: a transparent
@@ -129,9 +129,9 @@ The form on `/contact/` posts JSON to `/api/contact`, a serverless function
 (`api/contact.js`) that emails the enquiry. Two delivery paths are supported, so
 the site can reuse whichever mail setup is already in place:
 
-1. **Resend HTTP API** — used when `RESEND_API_KEY` is set. No dependency; Node's
+1. **Resend HTTP API**, used when `RESEND_API_KEY` is set. No dependency; Node's
    built-in `fetch` does the work.
-2. **SMTP** — used when `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS` are set, matching the
+2. **SMTP**, used when `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS` are set, matching the
    Gmail configuration the backend already uses. This path needs `nodemailer`,
    which is listed in `package.json` so Vercel installs it.
 
@@ -182,27 +182,27 @@ Pick one of two ways to connect the repository:
    `main`, and `vercel.json` supplies the security headers and asset caching.
 2. **GitHub Actions.** Add these repository secrets and the workflow in
    `.github/workflows/deploy.yml` drives Vercel instead:
-   - `VERCEL_TOKEN` — a Vercel access token
-   - `VERCEL_ORG_ID` — `team_NvQ5Ivi4LjtPiZk3PWorsFyK`
-   - `VERCEL_PROJECT_ID` — `prj_Q9vlQ7lklqJzQMokkwDBht3LMpKZ`
+   - `VERCEL_TOKEN`, a Vercel access token
+   - `VERCEL_ORG_ID`, `team_NvQ5Ivi4LjtPiZk3PWorsFyK`
+   - `VERCEL_PROJECT_ID`, `prj_Q9vlQ7lklqJzQMokkwDBht3LMpKZ`
 
 Either way, the workflow's **Verify** job runs on every push and pull request: it
 rebuilds the site, fails if the committed pages are stale, and checks that every
 internal link resolves. That job needs no secrets.
 
-Any other static host works too — the output is plain files.
+Any other static host works too, the output is plain files.
 
 ## Before launch
 
 The following content is intentionally marked as pending in the pages, and
 should be completed before the site goes live:
 
-- [ ] **Contact details** — phone number, street address, visiting hours, social links (`src/pages/contact.html`).
-- [ ] **Leadership profiles** — founder and executive team (`src/pages/about.html`).
-- [ ] **Regulatory and licensing disclosures** — must be reviewed before publication (`src/pages/disclosures.html`).
-- [ ] **Legal review** — Privacy Policy, Terms of Service, Cookie Policy and the risk disclosures are drafts and need review by qualified Nigerian counsel.
-- [ ] **Contact form handler** — code is complete; set `RESEND_API_KEY` in Vercel (and verify the sending domain in Resend) for delivery to work.
-- [ ] **Canonical domain** — `https://coopvest.africa` is assumed throughout (`build.py`, `robots.txt`, `sitemap.xml`). Change it in one place (`SITE` in `build.py`) if the domain differs.
+- [ ] **Contact details**, phone number, street address, visiting hours, social links (`src/pages/contact.html`).
+- [ ] **Leadership profiles**, founder and executive team (`src/pages/about.html`).
+- [ ] **Regulatory and licensing disclosures**, must be reviewed before publication (`src/pages/disclosures.html`).
+- [ ] **Legal review**, Privacy Policy, Terms of Service, Cookie Policy and the risk disclosures are drafts and need review by qualified Nigerian counsel.
+- [ ] **Contact form handler**, code is complete; set `RESEND_API_KEY` in Vercel (and verify the sending domain in Resend) for delivery to work.
+- [ ] **Canonical domain**, `https://coopvest.africa` is assumed throughout (`build.py`, `robots.txt`, `sitemap.xml`). Change it in one place (`SITE` in `build.py`) if the domain differs.
 
 ## Accessibility and quality
 

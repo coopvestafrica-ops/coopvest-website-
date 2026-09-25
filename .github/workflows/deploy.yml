@@ -3,7 +3,7 @@ name: Deploy to Vercel
 # Production deploys come from main. Pull requests get a preview deployment so
 # changes can be reviewed on a real URL before merging.
 #
-# Two ways to connect this repository to Vercel — pick one:
+# Two ways to connect this repository to Vercel, pick one:
 #
 #   1. Git integration (recommended): install the Vercel GitHub App for this
 #      repository. Vercel then deploys automatically on push and on pull
