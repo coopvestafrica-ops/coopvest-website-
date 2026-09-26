@@ -252,3 +252,31 @@ JavaScript disabled; `site.js` is progressive enhancement only.
 
 The contact form's client validation is for fast feedback only, `api/contact`
 validates again server-side.
+
+## Loan eligibility: the six-month rule
+
+The site states that a member becomes eligible to apply for a loan after
+**six months of consistent contributions**, meaning one contribution in each of
+six consecutive months. This appears on Loans (eligibility paragraph, checklist
+and a notice on gaps), FAQs (two questions), How it works, Home, Products and
+Disclosures section 7.
+
+Two things to know before touching that copy:
+
+- **The app does not enforce it yet.** `backend/src/lib/loanPolicy.js` in the
+  Latest-Coopvest repo records the 6-month rule as *deliberately disabled while
+  the platform is in testing*, and `loan_application_screen.dart` has
+  `isEligible = true` with the real membership/contribution check commented out
+  beside a "restore when testing is complete" note. The published copy is
+  therefore the intended policy, not current behaviour. If the rule is changed
+  or re-enabled, the site copy must move with it.
+- **The app counts the requirement two ways.** The screen derives it from
+  membership duration *and* from unique contribution months in the trailing six,
+  and its own wording is "6-month membership and contribution requirements".
+  The site copy deliberately says only "consistent contributions" because that
+  is the part the visitor controls, but do not let the two drift further apart
+  without deciding which is authoritative.
+
+Phrase it as a minimum, never as an entitlement: the app's own not-eligible path
+and Disclosures both say the six months does not guarantee approval. Keep that
+framing so the figure is not read as a promise of credit.
