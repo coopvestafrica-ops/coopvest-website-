@@ -384,11 +384,78 @@ ul, ol { padding-left: 1.25rem; }
 .hero .eyebrow { color: #f2b705; }
 
 .hero__panel {
+  position: relative;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-lg);
   padding: var(--sp-5);
-  backdrop-filter: blur(6px);
+  /* -webkit- first: Safari before 18 only honours the prefixed form, so
+     without it the panel loses its glass and the headline sits on bare photo. */
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
+/* Liquid-glass finish, in three cheap layers:
+     ::before             a specular edge, a gradient ring standing in for
+                          refraction
+     ::after              a sheen lit from a fixed direction, plus a highlight
+                          that tracks the pointer where there is one
+     .hero__panel-grain   faint grain, so the gradients do not band over the
+                          photograph
+   The panel's own box-shadow belongs to the `panel-glow` animation, so these
+   live on pseudo-elements and a child node rather than fight that keyframe for
+   the property. */
+.hero__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(140deg,
+    rgba(255, 255, 255, 0.52) 0%,
+    rgba(255, 255, 255, 0.06) 34%,
+    rgba(242, 183, 5, 0.30) 68%,
+    rgba(255, 255, 255, 0.16) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.hero__panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.9;
+  background:
+    radial-gradient(260px 260px at var(--glass-x, 14%) var(--glass-y, 0%),
+      rgba(255, 255, 255, 0.20), transparent 62%),
+    radial-gradient(120% 80% at 10% 0%, rgba(255, 255, 255, 0.10), transparent 56%),
+    radial-gradient(90% 60% at 88% 100%, rgba(242, 183, 5, 0.10), transparent 60%);
+}
+/* Grain on its own layer so the sheen above stays smooth. */
+.hero__panel > .hero__panel-grain {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* Content above the glass layers, so the overlays never wash out the text. */
+.hero__panel > h3,
+.hero__panel > dl {
+  position: relative;
+  z-index: 1;
+}
+/* Without backdrop-filter there is no blur to separate the panel from the
+   photo, so raise the fill until the stats stay legible against the light
+   parts of the image. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .hero__panel { background: rgba(16, 27, 22, 0.62); }
 }
 .hero__panel h3 { color: #fff; font-size: var(--step-1); margin-bottom: var(--sp-4); }
 .hero__stat {
