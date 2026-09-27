@@ -280,3 +280,41 @@ Two things to know before touching that copy:
 Phrase it as a minimum, never as an entitlement: the app's own not-eligible path
 and Disclosures both say the six months does not guarantee approval. Keep that
 framing so the figure is not read as a promise of credit.
+
+## The hero panel's glass finish
+
+`.hero__panel` is the site's liquid-glass surface. It is deliberately built from
+CSS, not a WebGL library, so it keeps the rules above: it is decoration, it must
+survive JavaScript being off, and it must not add a runtime build step.
+
+Three layers, none of which carry information:
+
+- `::before` is a 1px gradient ring masked to the border box, standing in for
+  the refracted edge.
+- `::after` is the sheen. Its highlight is lit from `--glass-x`/`--glass-y`,
+  which `initGlassSheen()` in `assets/js/site.js` moves to follow the pointer.
+  The custom properties have CSS defaults, so the panel is lit correctly with
+  JS off; the script only relights it, and it bails out entirely under
+  `prefers-reduced-motion: reduce` and on coarse pointers.
+- `.hero__panel-grain` is a faint `feTurbulence` SVG, inlined as a
+  `background-image`, that keeps the gradients from banding over the photo.
+
+Two constraints to keep if this is ever edited:
+
+- **Never set `box-shadow` on `.hero__panel`.** The `panel-glow` keyframe in the
+  hero animation already owns that property, and an author rule loses to it.
+  New effects belong on the pseudo-elements or a child node.
+- **The grain must stay a `background-image` inline SVG, never an `<img>`.**
+  `tools/make_photo_assets.py` rewrites `<img>` sources through the WebP
+  pipeline and would try to re-encode it as a photograph.
+
+Do not replace this with the `@ybouane/liquidglass` package. It rasterises the
+DOM behind each element via `foreignObject`, ships a `postinstall` hook
+(`patch-package`) with no `patches/` directory to apply, and costs ~23 KB
+brotli against ~1.2 KB for the CSS above. The library's refraction is better,
+but not on a page that must work without JavaScript.
+
+React Three Fiber is likewise the wrong tool here: ~255 KB brotli and a JSX
+build step for decoration on a repo whose whole point is that `python3 build.py`
+needs no framework. If real 3D is wanted, it belongs in the Admin-Dashboard
+(React 19 + Vite), not this static marketing site.
