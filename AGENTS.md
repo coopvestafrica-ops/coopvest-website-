@@ -280,3 +280,21 @@ Two things to know before touching that copy:
 Phrase it as a minimum, never as an entitlement: the app's own not-eligible path
 and Disclosures both say the six months does not guarantee approval. Keep that
 framing so the figure is not read as a promise of credit.
+
+## Contact form: the enquiry queue depends on migration 049
+
+The live `/api/contact` handler now posts to the backend ingest first, and the
+backend stores the enquiry in `contact_messages` before notifying admins.
+
+That table is created by `backend/migrations/049_contact_messages.sql`, and
+**nothing applies 048+ automatically**. The backend only bootstraps migration
+`012_super_admin_governance.sql` (`src/config/governanceSchema.js`), so 049 has
+to be applied to the Supabase database by hand. Until it is, the insert fails
+and the visitor sees `502 delivery_failed` even though the email fallback is
+configured. Verified live: `contact_messages` was absent from the schema cache
+(`PGRST205`, hint `ticket_messages`) and both `/api/contact` and
+`/api/v1/contact` returned `502`.
+
+If `/contact` starts failing again, check this table exists before touching the
+handler. The old shared-inbox behaviour is gone when the backend answers, so
+broken ingest means no enquiry is recorded anywhere.
