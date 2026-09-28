@@ -197,7 +197,8 @@
   }
 
   /* --------------------------------------------------------- form logic -- */
-  // Validates client-side, then posts to /api/contact, which emails the enquiry.
+  // Validates client-side, then posts to /api/contact, which records the
+  // enquiry so an admin can answer it from the dashboard.
   // Client validation is for fast feedback only - the endpoint validates again.
   function initForms() {
     document.querySelectorAll("[data-enquiry-form]").forEach(function (form) {
@@ -331,6 +332,38 @@
     });
   }
 
+  /* ------------------------------------------------------ hero glass sheen --
+   The hero panel is a liquid-glass surface. The refraction and edge highlight
+   are pure CSS; this only moves the specular highlight to follow the pointer.
+   It is a light-direction cue, not information, so it is skipped entirely for
+   readers who prefer reduced motion and on coarse pointers, where there is no
+   hover to follow and the highlight would just sit at its CSS default. */
+  function initGlassSheen() {
+    var panel = document.querySelector(".hero__panel");
+    if (!panel) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+    var frame = null;
+    panel.addEventListener("pointermove", function (event) {
+      if (frame) return;
+      frame = window.requestAnimationFrame(function () {
+        frame = null;
+        var box = panel.getBoundingClientRect();
+        if (!box.width || !box.height) return;
+        var x = ((event.clientX - box.left) / box.width) * 100;
+        var y = ((event.clientY - box.top) / box.height) * 100;
+        panel.style.setProperty("--glass-x", x.toFixed(1) + "%");
+        panel.style.setProperty("--glass-y", y.toFixed(1) + "%");
+      });
+    });
+
+    panel.addEventListener("pointerleave", function () {
+      panel.style.removeProperty("--glass-x");
+      panel.style.removeProperty("--glass-y");
+    });
+  }
+
   function ready(fn) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fn);
@@ -346,6 +379,7 @@
     initReveal();
     initCounters();
     initScrollAffordances();
+    initGlassSheen();
     initForms();
   });
 })();
