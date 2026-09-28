@@ -129,7 +129,11 @@ function badRequest(res, errors) {
 }
 
 function fromHeader() {
-  return process.env.CONTACT_FROM || 'Coopvest Website <coopvestafrica@gmail.com>';
+  if (process.env.CONTACT_FROM) return process.env.CONTACT_FROM;
+  // With Resend, a gmail.com from-address is rejected unless that domain is
+  // verified; the sandbox sender is the only one that works out of the box.
+  if (process.env.RESEND_API_KEY) return 'Coopvest Website <onboarding@resend.dev>';
+  return `Coopvest Website <${process.env.SMTP_USER || 'coopvestafrica@gmail.com'}>`;
 }
 
 function backendContactUrl() {
