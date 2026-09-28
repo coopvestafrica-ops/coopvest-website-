@@ -1,27 +1,34 @@
 /**
  * Contact form handler - POST /api/contact
  *
- * Delivers website enquiries by email. Two delivery paths are supported so the
- * site can reuse whichever mail setup is already in place:
+ * Records website enquiries in the Coopvest backend so they appear in the admin
+ * dashboard's Website Enquiries page, where an admin reads and replies to them.
+ * Delivery order:
  *
- *   1. Resend HTTP API  - used when RESEND_API_KEY is set. No dependencies.
- *   2. SMTP             - used when SMTP_HOST/SMTP_USER/SMTP_PASS are set,
- *                         matching the backend's existing Gmail configuration.
+ *   1. Backend ingest (preferred) - POSTs the enquiry to the API's
+ *      /api/contact, which stores it in `contact_messages` and notifies admins.
+ *      This is what makes an enquiry answerable from the dashboard.
+ *   2. Email fallback - if the backend is unreachable, the enquiry is emailed
+ *      directly via Resend or SMTP so it is not lost. Without the backend there
+ *      is no reply workflow; the email is a safety net, not the main path.
  *
  * Environment variables:
- *   RESEND_API_KEY   enables delivery via Resend
- *   SMTP_HOST        e.g. smtp.gmail.com
- *   SMTP_PORT        e.g. 465 (default 465; 587 switches to STARTTLS)
- *   SMTP_SECURE      "true" for implicit TLS on 465 (default true)
- *   SMTP_USER        the sending mailbox
- *   SMTP_PASS        the mailbox password or app password
- *   CONTACT_TO       where enquiries are delivered (default coopvestafrica@gmail.com)
- *   CONTACT_FROM     sender (default "Coopvest Website <coopvestafrica@gmail.com>")
- *   CONTACT_REPLY_TO optional Reply-To (default: the enquirer's own address)
- *   ALLOWED_ORIGINS  optional comma-separated extra origins allowed to post
+ *   BACKEND_CONTACT_URL  backend ingest URL (default
+ *                        https://coopvest-api.onrender.com/api/contact)
+ *   CONTACT_INGEST_TOKEN optional shared secret sent as X-Contact-Token
+ *   RESEND_API_KEY       enables the email fallback via Resend
+ *   SMTP_HOST            e.g. smtp.gmail.com
+ *   SMTP_PORT            e.g. 465 (default 465; 587 switches to STARTTLS)
+ *   SMTP_SECURE          "true" for implicit TLS on 465 (default true)
+ *   SMTP_USER            the sending mailbox
+ *   SMTP_PASS            the mailbox password or app password
+ *   CONTACT_TO           where fallback emails are delivered (default coopvestafrica@gmail.com)
+ *   CONTACT_FROM         sender (default "Coopvest Website <coopvestafrica@gmail.com>")
+ *   CONTACT_REPLY_TO     optional Reply-To (default: the enquirer's own address)
+ *   ALLOWED_ORIGINS      optional comma-separated extra origins allowed to post
  *
- * If no provider is configured the endpoint returns 503 rather than telling the
- * visitor their message was sent when it was not.
+ * If the backend is unreachable and no mail provider is configured the endpoint
+ * returns 502 rather than telling the visitor their message was sent.
  *
  * The form is public, so the handler is deliberately defensive: it validates and
  * length-caps every field, ignores the honeypot, rate-limits per client, and
@@ -123,6 +130,40 @@ function badRequest(res, errors) {
 
 function fromHeader() {
   return process.env.CONTACT_FROM || 'Coopvest Website <coopvestafrica@gmail.com>';
+}
+
+function backendContactUrl() {
+  return process.env.BACKEND_CONTACT_URL || 'https://coopvest-api.onrender.com/api/contact';
+}
+
+/**
+ * Send the enquiry to the backend so it is stored and becomes answerable from
+ * the admin dashboard. Returns true on success; throws so the caller can fall
+ * back to email. A timeout keeps a slow backend from holding the visitor on the
+ * "Sending…" button indefinitely.
+ */
+async function deliverViaBackend({ name, email, phone, topic, message }) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (process.env.CONTACT_INGEST_TOKEN) {
+      headers['X-Contact-Token'] = process.env.CONTACT_INGEST_TOKEN;
+    }
+    const response = await fetch(backendContactUrl(), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ name, email, phone, topic, message }),
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw new Error(`backend ${response.status} ${detail.slice(0, 200)}`);
+    }
+    return true;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Which delivery path is configured, if any. */
@@ -237,16 +278,28 @@ export default async function handler(req, res) {
 
   const to = process.env.CONTACT_TO || 'coopvestafrica@gmail.com';
   const replyTo = process.env.CONTACT_REPLY_TO || email;
-  const via = provider();
 
+  // Preferred path: record the enquiry in the backend so it shows up in the
+  // admin dashboard and can be answered there.
+  try {
+    await deliverViaBackend({ name, email, phone, topic, message });
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    // Log for operators; never return provider detail to the visitor.
+    console.error('contact: backend ingest failed:', err && err.message);
+  }
+
+  // Fallback: the backend is unreachable, so at least email the enquiry. There
+  // is no reply workflow on this path, but a lost enquiry is worse than an
+  // unanswered one.
+  const via = provider();
   if (!via) {
-    // Fail loudly rather than telling the visitor their message was sent.
-    console.error('contact: no mail provider configured (set RESEND_API_KEY or SMTP_*)');
-    return res.status(503).json({
+    console.error('contact: backend unreachable and no mail provider configured');
+    return res.status(502).json({
       ok: false,
-      error: 'email_not_configured',
+      error: 'delivery_failed',
       message:
-        'Our contact form is not accepting messages yet. Please email coopvestafrica@gmail.com directly.',
+        'We could not send your message just now. Please email coopvestafrica@gmail.com directly.',
     });
   }
 

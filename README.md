@@ -28,7 +28,7 @@ src/pages/*.html        source of truth: one partial per page (body + metadata)
 assets/css/site.css     design system (tokens, layout, components)
 assets/js/site.js       navigation, scroll reveal, form submission
 assets/img/             logo and icon assets (generated, see tools/)
-api/contact.js          serverless handler that emails contact-form enquiries
+api/contact.js          serverless handler that records contact-form enquiries
 build.py                wraps each partial in the shared shell
 tools/make_logo_assets.py  derives web logos/icons from the official artwork
 tools/check_links.py    verifies every internal link and asset resolves
@@ -126,34 +126,40 @@ python3 tools/make_logo_assets.py
 ## The contact form
 
 The form on `/contact/` posts JSON to `/api/contact`, a serverless function
-(`api/contact.js`) that emails the enquiry. Two delivery paths are supported, so
-the site can reuse whichever mail setup is already in place:
+(`api/contact.js`) that records the enquiry in the Coopvest backend so it
+appears in the admin dashboard's **Website Enquiries** page, where an admin
+reads and replies to it.
 
-1. **Resend HTTP API**, used when `RESEND_API_KEY` is set. No dependency; Node's
-   built-in `fetch` does the work.
-2. **SMTP**, used when `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS` are set, matching the
-   Gmail configuration the backend already uses. This path needs `nodemailer`,
-   which is listed in `package.json` so Vercel installs it.
+Delivery order:
+
+1. **Backend ingest (preferred).** The handler POSTs the enquiry to the API's
+   `/api/contact`, which stores it in `contact_messages`. This is the path that
+   makes an enquiry answerable — an admin sees it in the dashboard and replies
+   by email from there.
+2. **Email fallback.** If the backend is unreachable, the enquiry is emailed
+   directly via Resend or SMTP so it is not lost. This path has no reply
+   workflow, but a lost enquiry is worse than an unanswered one.
 
 Set these environment variables in the Vercel project (Settings → Environment
-Variables). **Either** provider works; Resend is preferred, SMTP reuses the
-Gmail configuration already used by the backend.
+Variables).
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `RESEND_API_KEY` | one of these | Enables delivery through Resend. |
-| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | one of these | Enables delivery by SMTP, e.g. `smtp.gmail.com` with a Gmail app password. |
+| `BACKEND_CONTACT_URL` | no | Backend ingest URL. Defaults to `https://coopvest-api.onrender.com/api/contact`. |
+| `CONTACT_INGEST_TOKEN` | no | Shared secret sent as `X-Contact-Token`. Only needed if the backend sets the matching `CONTACT_INGEST_TOKEN`. |
+| `RESEND_API_KEY` | for the fallback | Enables email fallback through Resend. |
+| `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` | for the fallback | Enables email fallback by SMTP, e.g. `smtp.gmail.com` with a Gmail app password. |
 | `SMTP_PORT` | no | Default `465` (implicit TLS). `587` switches to STARTTLS. |
 | `SMTP_SECURE` | no | `true`/`false`. Defaults to true on port 465. |
-| `CONTACT_TO` | no | Where enquiries are delivered (default `coopvestafrica@gmail.com`). |
+| `CONTACT_TO` | no | Where fallback emails are delivered (default `coopvestafrica@gmail.com`). |
 | `CONTACT_FROM` | no | Sender, e.g. `Coopvest Website <noreply@coopvest.africa>`. |
 | `CONTACT_REPLY_TO` | no | Overrides Reply-To (default is the enquirer's own address). |
 | `ALLOWED_ORIGINS` | no | Extra origins permitted to post, comma-separated. |
 
 A Resend key must have a verified sending domain; a Gmail app password is
-required if SMTP is used (a normal account password will be rejected). If
-**no** provider is configured the endpoint returns 503 rather than reporting a
-false success.
+required if SMTP is used (a normal account password will be rejected). If the
+backend is unreachable **and** no email provider is configured the endpoint
+returns 502 rather than reporting a false success.
 
 The handler validates and length-caps every field, rejects a disallowed
 `Origin`, rate-limits to 5 submissions per IP per 10 minutes, discards a
@@ -166,9 +172,9 @@ Run the smoke tests:
 node tools/test_contact_api.mjs
 ```
 
-They cover method rejection, validation, the unconfigured path, the honeypot,
-origin checks, rate limiting, header-injection handling, and both success and
-upstream-failure paths (with the network stubbed).
+They cover method rejection, validation, the backend-ingest path and its
+fallback, the honeypot, origin checks, rate limiting, header-injection handling,
+and both success and upstream-failure paths (with the network stubbed).
 
 ## Deploying
 
@@ -201,7 +207,7 @@ should be completed before the site goes live:
 - [ ] **Leadership profiles**, founder and executive team (`src/pages/about.html`).
 - [ ] **Regulatory and licensing disclosures**, must be reviewed before publication (`src/pages/disclosures.html`).
 - [ ] **Legal review**, Privacy Policy, Terms of Service, Cookie Policy and the risk disclosures are drafts and need review by qualified Nigerian counsel.
-- [ ] **Contact form handler**, code is complete; set `RESEND_API_KEY` in Vercel (and verify the sending domain in Resend) for delivery to work.
+- [ ] **Contact form handler**, code is complete; the backend ingest stores enquiries for the admin dashboard. Set `BACKEND_CONTACT_URL` only if the API is not at the default Render URL, and set `RESEND_API_KEY` (or `SMTP_*`) for the email fallback used when the backend is unreachable.
 - [ ] **Canonical domain**, `https://coopvest.africa` is assumed throughout (`build.py`, `robots.txt`, `sitemap.xml`). Change it in one place (`SITE` in `build.py`) if the domain differs.
 
 ## Accessibility and quality

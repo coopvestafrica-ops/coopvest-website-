@@ -1,6 +1,10 @@
 // Local smoke test for the contact handler. Not part of the deployment.
 // Copies api/contact.js to .mjs so it can be imported without a package.json
 // rewrite, then drives it with stub req/res objects.
+//
+// The handler now records the enquiry in the backend first (so the admin
+// dashboard can answer it) and only falls back to email when the backend is
+// unreachable. These tests stub `fetch` to drive each path.
 import { readFileSync, writeFileSync, rmSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
@@ -9,6 +13,9 @@ import { pathToFileURL } from "node:url";
 const TMP = new URL("./.contact_under_test.mjs", import.meta.url);
 writeFileSync(TMP, readFileSync(new URL("../api/contact.js", import.meta.url), "utf8"));
 const { default: handler } = await import(pathToFileURL(TMP.pathname).href);
+
+const BACKEND_URL = "https://backend.test/api/contact";
+process.env.BACKEND_CONTACT_URL = BACKEND_URL;
 
 function makeRes() {
   const res = {
@@ -53,71 +60,125 @@ function check(label, condition, detail) {
   if (!condition) failures += 1;
 }
 
+// Drive what the handler's `fetch` sees. `backend` controls the ingest call;
+// `resend` controls the email fallback. Any other URL is a bug.
+let calls = [];
+function stubFetch({ backend = "ok", resend = "ok" } = {}) {
+  calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url, init });
+    if (url === BACKEND_URL) {
+      if (backend === "ok") return { ok: true, status: 200, text: async () => '{"success":true}' };
+      if (backend === "down") throw new Error("ECONNREFUSED");
+      return { ok: false, status: 500, text: async () => '{"error":"boom"}' };
+    }
+    if (url === "https://api.resend.com/emails") {
+      if (resend === "ok") return { ok: true, status: 200, text: async () => "" };
+      return { ok: false, status: 422, text: async () => '{"message":"domain not verified"}' };
+    }
+    throw new Error(`unexpected fetch ${url}`);
+  };
+}
+
+// Clean any provider config left over from the shell, so the default paths are
+// deterministic (backend-first, no email).
+for (const k of ["RESEND_API_KEY", "SMTP_HOST", "SMTP_USER", "SMTP_PASS", "SMTP_PORT", "SMTP_SECURE", "CONTACT_INGEST_TOKEN"]) {
+  delete process.env[k];
+}
+
 // 1. GET is rejected
 let r = await call(null, { method: "GET" });
 check("GET -> 405", r.statusCode === 405, { code: r.statusCode });
 
 // 2. Missing fields are rejected with per-field errors
+stubFetch();
 r = await call({ name: "", email: "nope", topic: "Not a topic", message: "hi" });
 check("invalid payload -> 400 validation_failed",
   r.statusCode === 400 && r.body.error === "validation_failed", { code: r.statusCode, body: r.body });
 check("reports name, email, topic and message errors",
   ["name", "email", "topic", "message"].every((k) => r.body.errors && r.body.errors[k]), r.body.errors);
+check("a rejected payload never reaches the backend", calls.length === 0, calls.length);
 
-// 3. Without RESEND_API_KEY a valid submission returns 503, not a false success
-delete process.env.RESEND_API_KEY;
+// 3. The backend is the preferred path: the enquiry is recorded there so the
+//    dashboard can answer it.
+stubFetch({ backend: "ok" });
 r = await call(valid, { ip: "9.9.9.1" });
-check("valid but unconfigured -> 503 email_not_configured",
-  r.statusCode === 503 && r.body.error === "email_not_configured", { code: r.statusCode, body: r.body });
+check("backend ingest ok -> 200", r.statusCode === 200 && r.body.ok === true, r.body);
+check("posts the enquiry to the backend ingest URL",
+  calls.length === 1 && calls[0].url === BACKEND_URL, calls.map((c) => c.url));
+check("backend payload carries the enquiry",
+  calls[0] && JSON.parse(calls[0].init.body).email === "ada@example.com"
+    && JSON.parse(calls[0].init.body).topic === valid.topic, calls[0] && calls[0].init.body);
+check("backend is tried before any email provider", calls.length === 1, calls.length);
 
-// 4. Honeypot reports success without sending
-r = await call({ ...valid, website: "http://spam.example" }, { ip: "9.9.9.2" });
+// 4. Backend unreachable and no mail provider -> fail loudly, not a false success
+stubFetch({ backend: "down" });
+r = await call(valid, { ip: "9.9.9.2" });
+check("backend down + no provider -> 502 delivery_failed",
+  r.statusCode === 502 && r.body.error === "delivery_failed", { code: r.statusCode, body: r.body });
+
+// 5. Honeypot reports success without contacting anything
+stubFetch();
+r = await call({ ...valid, website: "http://spam.example" }, { ip: "9.9.9.3" });
 check("honeypot -> 200 ok", r.statusCode === 200 && r.body.ok === true, r.body);
+check("honeypot triggers no delivery", calls.length === 0, calls.length);
 
-// 5. Disallowed origin is refused
-r = await call(valid, { origin: "https://evil.example", ip: "9.9.9.3" });
+// 6. Disallowed origin is refused
+stubFetch();
+r = await call(valid, { origin: "https://evil.example", ip: "9.9.9.4" });
 check("foreign origin -> 403", r.statusCode === 403 && r.body.error === "origin_not_allowed", r.body);
+check("foreign origin triggers no delivery", calls.length === 0, calls.length);
 
-// 6. Same-origin is allowed (then fails on config, proving it passed the origin check)
-r = await call(valid, { origin: "https://coopvest-website.vercel.app", ip: "9.9.9.4" });
-check("same origin passes origin check", r.statusCode === 503, r.body);
+// 7. Same-origin is allowed (then reaches the backend stub, proving the origin check passed)
+stubFetch({ backend: "ok" });
+r = await call(valid, { origin: "https://coopvest-website.vercel.app", ip: "9.9.9.5" });
+check("same origin passes origin check", r.statusCode === 200, r.body);
 
-// 7. Rate limiting kicks in after the per-window allowance
+// 8. Rate limiting kicks in after the per-window allowance
+stubFetch({ backend: "ok" });
 let last;
 for (let i = 0; i < 8; i += 1) {
   last = await call(valid, { ip: "7.7.7.7" });
 }
 check("rate limit -> 429", last.statusCode === 429, { code: last.statusCode, body: last.body });
 
-// 8. Control characters are stripped before they can reach mail headers
-r = await call({ ...valid, name: "Ada\r\nBcc: victim@example.com" }, { ip: "9.9.9.5" });
-check("header injection is neutralised (no 200 success, no crash)",
-  r.statusCode === 503 || r.statusCode === 400, r.body);
+// 9. Control characters are stripped before they can reach the backend or mail
+stubFetch({ backend: "ok" });
+r = await call({ ...valid, name: "Ada\r\nBcc: victim@example.com" }, { ip: "9.9.9.6" });
+check("header injection is neutralised", r.statusCode === 200
+  && !JSON.parse(calls[0].init.body).name.includes("\n"), r.body);
 
-// 9. With a Resend key set, delivery is attempted against Resend (stubbed fetch)
-process.env.RESEND_API_KEY = "test_key";
-let captured = null;
-globalThis.fetch = async (url, init) => {
-  captured = { url, headers: init.headers, body: JSON.parse(init.body) };
-  return { ok: true, status: 200, text: async () => "" };
-};
-r = await call(valid, { ip: "9.9.9.6" });
-check("configured + upstream ok -> 200", r.statusCode === 200 && r.body.ok === true, r.body);
-check("posts to Resend with the enquiry", captured && captured.url === "https://api.resend.com/emails"
-  && captured.body.subject.includes("Ada Okonkwo"), captured && captured.body.subject);
-check("Reply-To defaults to the sender", captured && captured.body.reply_to === "ada@example.com",
-  captured && captured.body.reply_to);
-check("HTML body escapes the message", captured && captured.body.html.includes("enrol my staff"), null);
-
-// 10. Upstream failure is reported without leaking provider detail
-globalThis.fetch = async () => ({ ok: false, status: 422, text: async () => '{"message":"domain not verified"}' });
+// 10. A configured shared secret is forwarded to the backend
+process.env.CONTACT_INGEST_TOKEN = "s3cret";
+stubFetch({ backend: "ok" });
 r = await call(valid, { ip: "9.9.9.7" });
-check("upstream failure -> 502 delivery_failed", r.statusCode === 502 && r.body.error === "delivery_failed", r.body);
+check("X-Contact-Token is sent when configured",
+  calls[0] && calls[0].init.headers["X-Contact-Token"] === "s3cret", calls[0] && calls[0].init.headers);
+delete process.env.CONTACT_INGEST_TOKEN;
+
+// 11. Backend ingest failure falls back to Resend when it is configured
+process.env.RESEND_API_KEY = "test_key";
+stubFetch({ backend: "error", resend: "ok" });
+r = await call(valid, { ip: "9.9.9.8" });
+check("backend error + Resend ok -> 200", r.statusCode === 200 && r.body.ok === true, r.body);
+const resendCall = calls.find((c) => c.url === "https://api.resend.com/emails");
+check("falls back to Resend after the backend fails", Boolean(resendCall), calls.map((c) => c.url));
+check("Resend carries the enquiry with Reply-To the sender",
+  resendCall && JSON.parse(resendCall.init.body).reply_to === "ada@example.com"
+    && JSON.parse(resendCall.init.body).subject.includes("Ada Okonkwo"), resendCall && resendCall.init.body);
+check("HTML body escapes the message",
+  resendCall && JSON.parse(resendCall.init.body).html.includes("enrol my staff"), null);
+
+// 12. Resend failure is reported without leaking provider detail
+stubFetch({ backend: "down", resend: "fail" });
+r = await call(valid, { ip: "9.9.9.9" });
+check("backend down + Resend failure -> 502 delivery_failed",
+  r.statusCode === 502 && r.body.error === "delivery_failed", r.body);
 check("provider detail is not leaked to the visitor",
   !JSON.stringify(r.body).includes("domain not verified"), r.body);
 
-// 11. SMTP path. nodemailer is installed, so stub its transport to confirm the
-//     envelope we build is correct without opening a socket.
+// 13. SMTP fallback. nodemailer is installed, so stub its transport to confirm
+//     the envelope we build is correct without opening a socket.
 delete process.env.RESEND_API_KEY;
 process.env.SMTP_HOST = "smtp.gmail.com";
 process.env.SMTP_USER = "sender@example.com";
@@ -136,8 +197,9 @@ nodemailer.default.createTransport = (options) => {
   };
 };
 
-r = await call(valid, { ip: "9.9.9.8" });
-check("SMTP path delivers -> 200", r.statusCode === 200 && r.body.ok === true, r.body);
+stubFetch({ backend: "down" });
+r = await call(valid, { ip: "9.9.9.10" });
+check("backend down + SMTP fallback -> 200", r.statusCode === 200 && r.body.ok === true, r.body);
 check("SMTP transport uses the configured host and TLS on 465",
   smtpOptions && smtpOptions.host === "smtp.gmail.com" && smtpOptions.port === 465
     && smtpOptions.secure === true, smtpOptions);
@@ -147,28 +209,31 @@ check("SMTP message carries the enquiry and returns to the sender",
     && smtpCall.subject.includes("Ada Okonkwo")
     && smtpCall.text.includes("enrol my staff"), smtpCall && smtpCall.subject);
 
-// 12. Port 587 switches to STARTTLS rather than implicit TLS
+// 14. Port 587 switches to STARTTLS rather than implicit TLS
 process.env.SMTP_PORT = "587";
-r = await call(valid, { ip: "9.9.9.10" });
+stubFetch({ backend: "down" });
+r = await call(valid, { ip: "9.9.9.11" });
 check("SMTP port 587 uses STARTTLS", smtpOptions && smtpOptions.port === 587
   && smtpOptions.secure === false, smtpOptions);
 
-// 13. An SMTP failure is reported without leaking credentials
+// 15. An SMTP failure is reported without leaking credentials
 nodemailer.default.createTransport = () => ({
   sendMail: async () => { throw new Error("535-5.7.8 Username and Password not accepted"); },
 });
-r = await call(valid, { ip: "9.9.9.11" });
+stubFetch({ backend: "down" });
+r = await call(valid, { ip: "9.9.9.12" });
 check("SMTP failure -> 502 without leaking the password or host",
   r.statusCode === 502 && !JSON.stringify(r.body).includes("app-password")
     && !JSON.stringify(r.body).includes("smtp.gmail.com")
     && !JSON.stringify(r.body).includes("Username and Password not accepted"), r.body);
 
-// 14. SMTP env is ignored when incomplete, so we still refuse cleanly
+// 16. Incomplete SMTP config is ignored, so we still refuse cleanly
 delete process.env.SMTP_PASS;
 delete process.env.SMTP_PORT;
-r = await call(valid, { ip: "9.9.9.9" });
-check("incomplete SMTP config -> 503 email_not_configured",
-  r.statusCode === 503 && r.body.error === "email_not_configured", { code: r.statusCode, body: r.body });
+stubFetch({ backend: "down" });
+r = await call(valid, { ip: "9.9.9.13" });
+check("incomplete SMTP config -> 502 delivery_failed",
+  r.statusCode === 502 && r.body.error === "delivery_failed", { code: r.statusCode, body: r.body });
 
 rmSync(TMP, { force: true });
 console.log(failures === 0 ? "\nAll checks passed." : `\n${failures} check(s) failed.`);
