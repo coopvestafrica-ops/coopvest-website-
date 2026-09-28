@@ -66,17 +66,24 @@ not compounding. Every loan requires **3 guarantors**.
 
 ## App download
 
-`/download/` links to the APK at a stable URL:
+`/download/` links to `/api/download`, which redirects to the newest `.apk`
+asset on the `latest-apk` release of the app repository:
 
 ```
-https://github.com/teejayfpi/Coopvest-Africa/releases/latest/download/Coopvest-Africa.apk
+https://github.com/teejayfpi/Coopvest-Africa/releases/latest/download/app-release.apk
 ```
 
 That release is maintained automatically by the `Build Flutter APK` workflow in
-the app repository: on every successful release build from `main` it replaces the
-`latest-apk` release and re-uploads the APK under the fixed asset name
-`Coopvest-Africa.apk`, so the download link never changes. Workflow artifacts are
-not used, because they require a GitHub login.
+the app repository: on every successful release build from `main` it deletes and
+recreates the `latest-apk` release and re-uploads the universal APK as
+`app-release.apk`. The workflow uploads through `gh release upload
+"$APK#Coopvest-Africa.apk"`, which only renames the file's display label, so the
+asset name that matters is `app-release.apk` — link to that, not to
+`Coopvest-Africa.apk`, which 404s. Workflow artifacts are not used, because they
+require a GitHub login.
+
+`api/download.js` resolves the asset at request time, so the button keeps working
+whichever name a release used; the literal URL above is only a fallback.
 
 Update the version number and size shown on `/download/` (`src/pages/download.html`)
 when a new build is published.
