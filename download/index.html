@@ -100,11 +100,29 @@
           </div>
 
           <ul class="check-list" style="margin-top:var(--sp-6)">
-            <li><strong>Version:</strong> 1.0.0.</li>
-            <li><strong>Size:</strong> about 86 MB.</li>
+            <li><strong>Version:</strong> <span data-release-field="version">1.0.0 (build 291)</span>.</li>
+            <li><strong>Size:</strong> <span data-release-field="size">about 86 MB</span>.</li>
             <li><strong>Requires:</strong> Android 7.0 (API 24) or newer.</li>
             <li><strong>Works on:</strong> 32-bit and 64-bit devices (universal build).</li>
           </ul>
+
+          <div class="notice" style="margin-top:var(--sp-5)">
+            <strong>Verify the file before you install it</strong>
+            <p style="color:var(--ink-muted);max-width:none">
+              Every build is published with a SHA-256 digest. After downloading, compare
+              it against the value below, or against the release notes on GitHub. If they
+              do not match, do not install the file and tell us.
+            </p>
+            <p style="margin-top:var(--sp-3)">
+              <strong>SHA-256</strong><br />
+              <code data-release-field="sha256" style="overflow-wrap:anywhere">cc2822f706fbe34787fa5e0055fdbda36207a907b5320bd7b4ba4cdcc3a758e0</code>
+            </p>
+            <p style="color:var(--ink-muted);margin-top:var(--sp-3);font-size:0.9375rem">
+              <a data-release-field="releaseUrl"
+                 href="https://github.com/teejayfpi/Coopvest-Africa/releases/tag/latest-apk"
+                 rel="noopener">See this build's release notes</a>
+            </p>
+          </div>
         </div>
 
         <div class="reveal">
@@ -294,6 +312,6 @@
     <a class="btn btn--primary" href="/contact/">Get Started</a>
   </div>
 
-  <script src="/assets/js/site.js?v=8400b792ea" defer></script>
+  <script src="/assets/js/site.js?v=7d4bd83a27" defer></script>
 </body>
 </html>

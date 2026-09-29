@@ -20,3 +20,6 @@ node_modules/
 
 # Temp file written by the download test
 .download_under_test.mjs
+
+# Temp file written by the release-info test
+.release_info_under_test.mjs
