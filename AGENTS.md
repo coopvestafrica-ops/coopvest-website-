@@ -13,7 +13,7 @@ generated HTML is committed, so a static host can serve the repo as-is.
 ```bash
 python3 build.py            # regenerate all HTML + sitemap.xml  (npm run build)
 python3 tools/check_links.py <base-url>   # needs a running server
-npm test                    # contact-form serverless function tests
+npm test                    # contact-form, APK download and release-info tests
 ```
 
 `check_links.py` defaults to `http://localhost:8080`, so start one first:
@@ -53,6 +53,13 @@ dead-ending the visitor if the API is unreachable.
 Because the asset URL GitHub returns is signed and time-limited, the handler
 sends a 302 with `no-store`, the browser must re-resolve through the handler
 rather than caching the signed target.
+
+The download page also shows the current build's SHA-256 digest, so a visitor
+can verify the file rather than trusting the link. Those values change with
+every build, so `api/release-info.js` resolves them from the same release (the
+digest is parsed out of the release body) and `site.js` refreshes the fields on
+load. The page ships static fallback values, so it is correct without
+JavaScript and stays correct if the handler is unreachable.
 
 ## Photography
 

@@ -7,7 +7,7 @@
   "scripts": {
     "build": "python3 build.py",
     "check": "python3 tools/check_links.py",
-    "test": "node tools/test_contact_api.mjs && node tools/test_download_api.mjs"
+    "test": "node tools/test_contact_api.mjs && node tools/test_download_api.mjs && node tools/test_release_info_api.mjs"
   },
   "dependencies": {
     "nodemailer": "^6.9.7"

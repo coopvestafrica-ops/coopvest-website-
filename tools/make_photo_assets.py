@@ -37,6 +37,18 @@ PHOTOS = [
     ("planning-couple", "coopvest-financial-planning-couple.jpg", 1200, 4 / 3, 0.30),
     ("savings-phone", "coopvest-savings-woman-phone.jpg", 900, 4 / 5, 0.22),
     ("app-mockup", "coopvest-app-phone-mockup-professional.png", 760, 4 / 5, 0.5),
+    # Second photography batch. Each source is already the exact aspect its slot
+    # uses, so these are scaled only and the bias never bites.
+    ("hero-community", "coopvest-hero-community.jpg", 1800, 16 / 9, 0.40),
+    ("team", "coopvest-team.jpg", 1200, 16 / 9, 0.40),
+    ("member-records", "coopvest-member-records.jpg", 1200, 16 / 9, 0.40),
+    ("employer-partnership", "coopvest-employer-partnership.jpg", 1200, 16 / 9, 0.40),
+    ("direct-deposit", "coopvest-direct-deposit.jpg", 1200, 4 / 3, 0.35),
+    ("identity-verification", "coopvest-identity-verification.jpg", 1200, 4 / 3, 0.35),
+    ("loan-planning", "coopvest-loan-planning.jpg", 1200, 4 / 3, 0.35),
+    ("member-support", "coopvest-member-support.jpg", 1200, 4 / 3, 0.35),
+    ("savings-contributions", "coopvest-savings-contributions.jpg", 1200, 4 / 3, 0.35),
+    ("mobile-app", "coopvest-mobile-app.jpg", 760, 4 / 5, 0.45),
 ]
 
 

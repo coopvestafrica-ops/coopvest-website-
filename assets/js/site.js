@@ -364,6 +364,38 @@
     });
   }
 
+  /* ---------------------------------------------------- release metadata --
+   The download page ships the current version and SHA-256 digest as static
+   text, so it is correct without JavaScript and never blank. This refreshes
+   those values from the release the download button resolves to, so the page
+   does not drift as new builds are published. A failure leaves the static
+   fallback in place rather than emptying the fields. */
+  function initReleaseInfo() {
+    var sha = document.querySelector('[data-release-field="sha256"]');
+    if (!sha || !window.fetch) return;
+
+    window.fetch("/api/release-info", { headers: { Accept: "application/json" } })
+      .then(function (response) {
+        if (!response.ok) throw new Error("release info " + response.status);
+        return response.json();
+      })
+      .then(function (info) {
+        if (!info) return;
+        if (info.sha256) sha.textContent = info.sha256;
+        if (info.version) {
+          var v = document.querySelector('[data-release-field="version"]');
+          if (v) v.textContent = info.version;
+        }
+        if (info.size) {
+          var s = document.querySelector('[data-release-field="size"]');
+          if (s) s.textContent = "about " + info.size;
+        }
+        var link = document.querySelector('[data-release-field="releaseUrl"]');
+        if (link && info.releaseUrl) link.href = info.releaseUrl;
+      })
+      .catch(function () { /* keep the static fallback */ });
+  }
+
   function ready(fn) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fn);
@@ -381,5 +413,6 @@
     initScrollAffordances();
     initGlassSheen();
     initForms();
+    initReleaseInfo();
   });
 })();
