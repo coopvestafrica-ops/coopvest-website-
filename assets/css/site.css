@@ -1038,6 +1038,21 @@ tbody tr:last-child td { border-bottom: 0; }
   .media-frame img { max-width: 300px; }
 }
 
+/* Line-art explainer frame. The SVG diagrams are drawn to the palette rather
+   than photographed, so they take a tinted surround instead of the dark
+   .photo-frame--dark treatment, and are allowed to fill the width because they
+   are wide multi-column figures rather than a portrait of a person. */
+.illustration-frame {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, #f7faf8 0%, #e9f2ec 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5);
+}
+.illustration-frame img { width: 100%; height: auto; }
+@media (max-width: 900px) { .illustration-frame { padding: var(--sp-4); } }
+
 /* Partner / logo ticker. Duplicated content is aria-hidden so screen readers
    hear the list once, and the whole strip pauses on hover. */
 .ticker {

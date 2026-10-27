@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380" role="img" aria-labelledby="sg-title sg-desc" width="520" height="380">
+  <title id="sg-title">Consistent contributions build savings</title>
+  <desc id="sg-desc">A bar chart of six monthly contributions that rise steadily, with a line marking the point at which a member becomes eligible to apply for a loan.</desc>
+
+  <style>
+    .fade { animation: fade .7s ease both; }
+    @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+    .bar { transform-origin: bottom; animation: grow .9s cubic-bezier(.2,.7,.3,1) both; }
+    @keyframes grow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+    .b1{animation-delay:.15s}.b2{animation-delay:.28s}.b3{animation-delay:.41s}
+    .b4{animation-delay:.54s}.b5{animation-delay:.67s}.b6{animation-delay:.80s}
+    .draw { stroke-dasharray: 620; stroke-dashoffset: 620; animation: draw 1.3s .5s ease forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .mark { animation: fade .5s 1.5s ease both; }
+    @media (prefers-reduced-motion: reduce) { .fade,.bar,.draw,.mark { animation: none; } .draw { stroke-dashoffset: 0; } }
+  </style>
+
+  <defs>
+    <linearGradient id="sgBrand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2e7d32"/>
+      <stop offset="1" stop-color="#0f3d14"/>
+    </linearGradient>
+    <linearGradient id="sgGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2b705"/>
+      <stop offset="1" stop-color="#dba400"/>
+    </linearGradient>
+    <filter id="sgSh" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#101b16" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#sgSh)">
+    <rect x="16" y="18" width="488" height="300" rx="20" fill="#ffffff" stroke="#e3eae6"/>
+  </g>
+
+  <text x="44" y="56" font-family="Inter, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#101b16">Your savings, month by month</text>
+  <text x="44" y="74" font-family="Inter, system-ui, sans-serif" font-size="10.5" fill="#5c6b64">A modest amount, paid every month, compounds into eligibility.</text>
+
+  <!-- gridlines -->
+  <g stroke="#eef2f0" stroke-width="1">
+    <line x1="44" y1="104" x2="476" y2="104"/>
+    <line x1="44" y1="148" x2="476" y2="148"/>
+    <line x1="44" y1="192" x2="476" y2="192"/>
+    <line x1="44" y1="236" x2="476" y2="236"/>
+  </g>
+  <line x1="44" y1="268" x2="476" y2="268" stroke="#d8e2dc"/>
+
+  <!-- bars -->
+  <g class="fade">
+    <rect class="bar b1" x="58"  y="228" width="46" height="40"  rx="8" fill="#a9ccb5"/>
+    <rect class="bar b2" x="124" y="212" width="46" height="56"  rx="8" fill="#a9ccb5"/>
+    <rect class="bar b3" x="190" y="196" width="46" height="72"  rx="8" fill="#81c784"/>
+    <rect class="bar b4" x="256" y="178" width="46" height="90"  rx="8" fill="#81c784"/>
+    <rect class="bar b5" x="322" y="158" width="46" height="110" rx="8" fill="url(#sgBrand)"/>
+    <rect class="bar b6" x="388" y="134" width="46" height="134" rx="8" fill="url(#sgGold)"/>
+  </g>
+
+  <!-- month labels -->
+  <g font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5c6b64" text-anchor="middle">
+    <text x="81"  y="286">M1</text>
+    <text x="147" y="286">M2</text>
+    <text x="213" y="286">M3</text>
+    <text x="279" y="286">M4</text>
+    <text x="345" y="286">M5</text>
+    <text x="411" y="286">M6</text>
+  </g>
+
+  <!-- eligibility line -->
+  <g class="mark">
+    <line x1="256" y1="120" x2="476" y2="120" stroke="#dba400" stroke-width="1.6" stroke-dasharray="5 6"/>
+    <rect x="330" y="96" width="146" height="22" rx="11" fill="#fff1c2"/>
+    <text x="403" y="111" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" fill="#8a6300">Eligible to apply for a loan</text>
+  </g>
+
+  <!-- growth line -->
+  <path class="draw" d="M81 234 L147 218 L213 202 L279 184 L345 164 L411 140" fill="none" stroke="#0f3d14" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
+
+  <text x="260" y="342" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10.5" fill="#5c6b64">Six contributions, one in each consecutive month. A missed month sets that month back.</text>
+</svg>
