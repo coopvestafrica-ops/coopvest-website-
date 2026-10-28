@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380" role="img" aria-labelledby="sm-title sm-desc" width="520" height="380">
+  <title id="sm-title">Loan limits are a multiple of your savings</title>
+  <desc id="sm-desc">Three stacked columns showing that most products allow up to three times your savings, the Premium Loan four times, and the Maxi Loan five times, with a minimum loan of one thousand naira.</desc>
+
+  <style>
+    .fade { animation: fade .7s ease both; }
+    @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+    .c1{animation-delay:.1s}.c2{animation-delay:.3s}.c3{animation-delay:.5s}
+    .unit { transform-origin: bottom; animation: grow .7s cubic-bezier(.2,.7,.3,1) both; }
+    @keyframes grow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+    .u1{animation-delay:.5s}.u2{animation-delay:.62s}.u3{animation-delay:.74s}
+    .u4{animation-delay:.86s}.u5{animation-delay:.98s}
+    .u6{animation-delay:.6s}.u7{animation-delay:.72s}.u8{animation-delay:.84s}
+    @media (prefers-reduced-motion: reduce) { .fade,.unit { animation: none; } }
+  </style>
+
+  <defs>
+    <linearGradient id="smBrand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2e7d32"/>
+      <stop offset="1" stop-color="#0f3d14"/>
+    </linearGradient>
+    <linearGradient id="smGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2b705"/>
+      <stop offset="1" stop-color="#dba400"/>
+    </linearGradient>
+    <filter id="smSh" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#101b16" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#smSh)">
+    <rect x="16" y="18" width="488" height="320" rx="20" fill="#ffffff" stroke="#e3eae6"/>
+  </g>
+  <text x="44" y="56" font-family="Inter, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#101b16">Your limit is a multiple of what you save</text>
+  <text x="44" y="74" font-family="Inter, system-ui, sans-serif" font-size="10.5" fill="#5c6b64">The more you have saved, the more you can borrow. No collateral.</text>
+
+  <line x1="60" y1="300" x2="476" y2="300" stroke="#d8e2dc"/>
+
+  <!-- 3x -->
+  <g class="fade c1">
+    <rect x="92" y="264" width="70" height="36" rx="7" fill="#a9ccb5"/>
+    <rect class="unit u1" x="92" y="212" width="70" height="46" rx="7" fill="#81c784"/>
+    <rect class="unit u2" x="92" y="160" width="70" height="46" rx="7" fill="#2e7d32"/>
+    <text x="127" y="330" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="700" fill="#0f3d14">3&#215;</text>
+    <text x="127" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5c6b64">Quick · Flexi · Stable</text>
+  </g>
+
+  <!-- 4x -->
+  <g class="fade c2">
+    <rect x="225" y="264" width="70" height="36" rx="7" fill="#a9ccb5"/>
+    <rect class="unit u3" x="225" y="212" width="70" height="46" rx="7" fill="#81c784"/>
+    <rect class="unit u4" x="225" y="160" width="70" height="46" rx="7" fill="#2e7d32"/>
+    <rect class="unit u5" x="225" y="108" width="70" height="46" rx="7" fill="#0f3d14"/>
+    <text x="260" y="330" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="700" fill="#0f3d14">4&#215;</text>
+    <text x="260" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5c6b64">Premium</text>
+  </g>
+
+  <!-- 5x -->
+  <g class="fade c3">
+    <rect x="358" y="264" width="70" height="36" rx="7" fill="#a9ccb5"/>
+    <rect class="unit u6" x="358" y="212" width="70" height="46" rx="7" fill="#81c784"/>
+    <rect class="unit u7" x="358" y="160" width="70" height="46" rx="7" fill="#2e7d32"/>
+    <rect class="unit u8" x="358" y="108" width="70" height="46" rx="7" fill="url(#smGold)"/>
+    <rect x="358" y="56" width="70" height="46" rx="7" fill="#fff1c2" stroke="#f2d67a" stroke-dasharray="4 4"/>
+    <text x="393" y="84" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#8a6300">5&#215;</text>
+    <text x="393" y="330" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="700" fill="#8a6300">5&#215;</text>
+    <text x="393" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5c6b64">Maxi</text>
+  </g>
+
+  <g class="fade c3">
+    <rect x="44" y="296" width="12" height="12" rx="3" fill="#a9ccb5"/>
+    <text x="62" y="306" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5c6b64">Each block = your savings balance. Minimum loan &#8358;1,000.</text>
+  </g>
+</svg>

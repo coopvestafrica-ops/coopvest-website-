@@ -104,6 +104,35 @@ real face carries more trust than another bordered box. Keep them out of the
 hero unless the overlay is dark enough; white text over an undimmed photo will
 fail contrast.
 
+### Illustrations
+
+Alongside photography, some explainers are hand-authored SVG diagrams in
+`assets/img/illustration-*.svg`. They are drawn to the palette (`--brand-*`
+greens, `--accent-*` gold) rather than being stock art, so they read as the same
+product as the app. There is no generator for these, they are edited as source.
+
+Place one with the `illustration-frame` class, which gives the tinted surround
+the dark `photo-frame--dark` treatment would otherwise give a diagram:
+
+```html
+<figure class="illustration-frame reveal" style="margin:0">
+  <img src="/assets/img/illustration-savings-growth.svg" alt="…" width="520" height="380" />
+</figure>
+```
+
+Rules that keep them consistent:
+
+- **`width`/`height` on the `<img>` must match the SVG's `viewBox`**, or the
+  slot reserves the wrong aspect ratio before the file loads.
+- **Animation is decoration and must degrade.** Each SVG carries a
+  `prefers-reduced-motion: reduce` block that switches its animations off, and
+  entrance fades must not leave an element at zero opacity in that mode.
+- **Give every SVG a `<title>`/`<desc>` and `role="img"`,** and give the `<img>`
+  a real `alt` that says what the diagram shows, since it carries information
+  the surrounding copy does not always repeat.
+- They are plain `<img>` with an `.svg` source, so `build.py`'s WebP pass skips
+  them automatically (it only rewrites `.jpg`/`.jpeg`/`.png`).
+
 ## Responsive
 
 The layout is fluid, not breakpoint-driven. Two rules do most of the work:

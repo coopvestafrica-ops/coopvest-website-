@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380" role="img" aria-labelledby="fr-title fr-desc" width="520" height="380">
+  <title id="fr-title">Interest is a flat charge, not compounding</title>
+  <desc id="fr-desc">Two lines comparing a flat interest charge that rises in a straight line with a compounding charge that curves upward. Coopvest uses the flat charge: the total you are quoted is the total you repay.</desc>
+
+  <style>
+    .fade { animation: fade .7s ease both; }
+    @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+    .d1{animation-delay:.1s}.d2{animation-delay:.3s}
+    .flat { stroke-dasharray: 640; stroke-dashoffset: 640; animation: draw 1.1s .3s ease forwards; }
+    .comp { stroke-dasharray: 700; stroke-dashoffset: 700; animation: draw 1.3s .6s ease forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @media (prefers-reduced-motion: reduce) { .fade,.flat,.comp { animation: none; } .flat,.comp { stroke-dashoffset: 0; } }
+  </style>
+
+  <defs>
+    <linearGradient id="frBrand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2e7d32"/>
+      <stop offset="1" stop-color="#0f3d14"/>
+    </linearGradient>
+    <filter id="frSh" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#101b16" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#frSh)">
+    <rect x="16" y="18" width="488" height="300" rx="20" fill="#ffffff" stroke="#e3eae6"/>
+  </g>
+  <text x="44" y="56" font-family="Inter, system-ui, sans-serif" font-size="13.5" font-weight="700" fill="#101b16">Interest is a flat charge, not compounding</text>
+  <text x="44" y="74" font-family="Inter, system-ui, sans-serif" font-size="10.5" fill="#5c6b64">Total repayment = amount + (amount &#215; rate). The figure you are quoted is the figure you repay.</text>
+
+  <!-- axes -->
+  <line x1="70" y1="268" x2="470" y2="268" stroke="#d8e2dc"/>
+  <line x1="70" y1="268" x2="70" y2="104" stroke="#d8e2dc"/>
+  <text x="60" y="112" text-anchor="end" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#5c6b64">cost</text>
+  <text x="474" y="282" text-anchor="end" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#5c6b64">tenure &#8594;</text>
+
+  <!-- flat line -->
+  <path class="flat" d="M70 250 L456 130" fill="none" stroke="url(#frBrand)" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- compounding curve -->
+  <path class="comp" d="M70 250 C 200 240, 330 190, 456 96" fill="none" stroke="#c62828" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="6 6" opacity="0.85"/>
+
+  <!-- legend -->
+  <g class="fade d1">
+    <rect x="70" y="290" width="18" height="4" rx="2" fill="#0f3d14"/>
+    <text x="96" y="296" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#101b16">Coopvest flat interest</text>
+  </g>
+  <g class="fade d2">
+    <rect x="270" y="290" width="18" height="4" rx="2" fill="#c62828"/>
+    <text x="296" y="296" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#101b16">Compounding interest</text>
+  </g>
+
+  <text x="260" y="340" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10.5" fill="#5c6b64">A longer tenure lowers your monthly instalment but raises the total interest you pay.</text>
+</svg>

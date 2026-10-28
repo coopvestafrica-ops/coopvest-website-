@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" role="img" aria-labelledby="sec-title sec-desc" width="480" height="360">
+  <title id="sec-title">How Coopvest protects your account</title>
+  <desc id="sec-desc">A shield at the centre of four safeguards: identity verification before financial activity, encrypted connections, role-based access, and an audit log of every action.</desc>
+
+  <style>
+    .fade { animation: fade .7s ease both; }
+    @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+    .s1{animation-delay:.1s}.s2{animation-delay:.25s}.s3{animation-delay:.4s}.s4{animation-delay:.55s}
+    .pulse { animation: pulse 3s ease-in-out infinite; transform-origin: center; }
+    @keyframes pulse { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+    @media (prefers-reduced-motion: reduce) { .fade,.pulse { animation: none; } }
+  </style>
+
+  <defs>
+    <linearGradient id="secBrand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2e7d32"/>
+      <stop offset="0.55" stop-color="#1b5e20"/>
+      <stop offset="1" stop-color="#0f3d14"/>
+    </linearGradient>
+    <linearGradient id="secGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f2b705"/>
+      <stop offset="1" stop-color="#dba400"/>
+    </linearGradient>
+    <filter id="secSh" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#101b16" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- shield -->
+  <g class="pulse">
+    <circle cx="240" cy="150" r="74" fill="#e3f1eb"/>
+  </g>
+  <g filter="url(#secSh)">
+    <path d="M240 84 L300 106 V152 C300 190 274 212 240 222 C206 212 180 190 180 152 V106 Z" fill="url(#secBrand)"/>
+  </g>
+  <path d="M222 152 l12 12 24 -26" fill="none" stroke="#ffffff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="288" cy="96" r="13" fill="url(#secGold)" filter="url(#secSh)"/>
+  <rect x="283" y="94" width="10" height="8" rx="2" fill="#4a3600"/>
+  <path d="M285 94 v-3 a3 3 0 0 1 6 0 v3" fill="none" stroke="#4a3600" stroke-width="1.8"/>
+
+  <!-- four safeguards -->
+  <g class="fade s1">
+    <rect x="14" y="258" width="212" height="42" rx="11" fill="#eef3f0"/>
+    <circle cx="38" cy="279" r="5" fill="#1b5e20"/>
+    <text x="54" y="276" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#101b16">Identity verified first</text>
+    <text x="54" y="291" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#5c6b64">KYC before any financial activity</text>
+  </g>
+  <g class="fade s2">
+    <rect x="254" y="258" width="212" height="42" rx="11" fill="#eef3f0"/>
+    <circle cx="278" cy="279" r="5" fill="#1b5e20"/>
+    <text x="294" y="276" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#101b16">Encrypted in transit</text>
+    <text x="294" y="291" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#5c6b64">HTTPS with strict transport security</text>
+  </g>
+  <g class="fade s3">
+    <rect x="14" y="308" width="212" height="42" rx="11" fill="#fff1c2"/>
+    <circle cx="38" cy="329" r="5" fill="#8a6300"/>
+    <text x="54" y="326" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#8a6300">Least-privilege access</text>
+    <text x="54" y="341" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#8a6300">Internal access limited by role</text>
+  </g>
+  <g class="fade s4">
+    <rect x="254" y="308" width="212" height="42" rx="11" fill="#eef3f0"/>
+    <circle cx="278" cy="329" r="5" fill="#1b5e20"/>
+    <text x="294" y="326" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#101b16">Every action logged</text>
+    <text x="294" y="341" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#5c6b64">Operational actions recorded for audit</text>
+  </g>
+</svg>
