@@ -61,6 +61,15 @@ digest is parsed out of the release body) and `site.js` refreshes the fields on
 load. The page ships static fallback values, so it is correct without
 JavaScript and stays correct if the handler is unreachable.
 
+Those static values do not update themselves, so they drifted: the page shipped
+build 291's digest while the live release was build 323, and a no-JS visitor was
+told to verify a file against a digest that matched nothing. `tools/sync_release_fallback.py`
+now rewrites them from the live release, and the deploy workflow runs it (then
+`build.py`) before `vercel build`, so the deployed page always carries the real
+values. Run it after publishing a new APK; `--check` fails if the fallback is
+stale. It derives the values with the same regexes as `api/release-info.js`, so
+the static and runtime paths cannot disagree.
+
 ## Photography
 
 Originals are uploaded to `download/`. They arrive large and mislabelled: every
@@ -326,11 +335,29 @@ That table is created by `backend/migrations/049_contact_messages.sql`, and
 **nothing applies 048+ automatically**. The backend only bootstraps migration
 `012_super_admin_governance.sql` (`src/config/governanceSchema.js`), so 049 has
 to be applied to the Supabase database by hand. Until it is, the insert fails
-and the visitor sees `502 delivery_failed` even though the email fallback is
-configured. Verified live: `contact_messages` was absent from the schema cache
-(`PGRST205`, hint `ticket_messages`) and both `/api/contact` and
-`/api/v1/contact` returned `502`.
+and the visitor sees `502 delivery_failed`. (This was the original cause;
+`contact_messages` was absent from the schema cache with `PGRST205`. It is now
+applied — verified live, the backend ingest returns `200 {"success":true}`.)
 
-If `/contact` starts failing again, check this table exists before touching the
+If `/contact` starts failing again, check the table exists before touching the
 handler. The old shared-inbox behaviour is gone when the backend answers, so
 broken ingest means no enquiry is recorded anywhere.
+
+### A second, subtler cause: the cold-start timeout
+
+Even with 049 applied, `/api/contact` returned `502 delivery_failed` on the
+first enquiry after an idle period, then worked on a retry. The backend runs on
+Render's **free plan**, which spins down after ~15 minutes idle, and the next
+request cold-starts it in 30-60s. The handler only waited **8s**
+(`deliverViaBackend`'s `AbortController`), so it aborted a backend that was
+healthy but not yet awake.
+
+The fix is a 45s budget (`BACKEND_TIMEOUT_MS`, override with
+`BACKEND_CONTACT_TIMEOUT_MS`) plus `functions["api/contact.js"].maxDuration: 60`
+in `vercel.json` — Vercel's default function limit is 10s, so without that the
+longer wait would be cut off at the platform instead. Both are pinned by tests
+in `tools/test_contact_api.mjs`, because the timeout and the platform limit have
+to move together.
+
+The durable fix is to stop the backend idling (a paid Render plan, or a
+keep-alive ping); the timeout only makes the site survive the sleep.

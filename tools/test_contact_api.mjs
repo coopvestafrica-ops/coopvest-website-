@@ -235,6 +235,25 @@ r = await call(valid, { ip: "9.9.9.13" });
 check("incomplete SMTP config -> 502 delivery_failed",
   r.statusCode === 502 && r.body.error === "delivery_failed", { code: r.statusCode, body: r.body });
 
+// 17. The backend ingest must wait long enough to absorb a Render cold start.
+//     The old 8s budget aborted the first enquiry after every idle period, so
+//     the visitor got 502 while the backend was merely asleep. Guard both the
+//     timeout and the Vercel function limit that has to contain it.
+const contactSrc = readFileSync(new URL("../api/contact.js", import.meta.url), "utf8");
+const timeoutMatch = contactSrc.match(
+  /BACKEND_TIMEOUT_MS\s*=\s*Number\([^)]*\)\s*\|\|\s*(\d+)/,
+);
+const defaultTimeout = timeoutMatch ? Number(timeoutMatch[1]) : 0;
+check("backend ingest timeout clears a Render cold start (>8s)",
+  defaultTimeout > 8000, defaultTimeout);
+
+const vercel = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+const maxDuration = vercel.functions && vercel.functions["api/contact.js"]
+  && vercel.functions["api/contact.js"].maxDuration;
+check("vercel.json gives /api/contact a maxDuration that contains the timeout",
+  typeof maxDuration === "number" && maxDuration * 1000 > defaultTimeout,
+  { maxDuration, defaultTimeout });
+
 rmSync(TMP, { force: true });
 console.log(failures === 0 ? "\nAll checks passed." : `\n${failures} check(s) failed.`);
 process.exit(failures === 0 ? 0 : 1);

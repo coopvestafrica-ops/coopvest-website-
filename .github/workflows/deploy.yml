@@ -98,6 +98,20 @@ jobs:
             --environment=${{ github.event_name == 'pull_request' && 'preview' || 'production' }} \
             --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Refresh download fallback from the live release
+        # The download page's no-JS fallback (version/size/SHA-256) has to match
+        # the release the button points at, or a visitor is told to verify the
+        # file against a digest that matches nothing. Refresh it here, then
+        # rebuild so the committed HTML carries the new values. Non-fatal: if
+        # GitHub is unreachable the page keeps its last-known values, which is
+        # also what /api/release-info does at runtime.
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 tools/sync_release_fallback.py
+          python3 build.py
+
       - name: Build project artifacts
         run: vercel build ${{ github.event_name != 'pull_request' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
