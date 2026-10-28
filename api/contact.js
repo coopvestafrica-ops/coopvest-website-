@@ -15,6 +15,9 @@
  * Environment variables:
  *   BACKEND_CONTACT_URL  backend ingest URL (default
  *                        https://coopvest-api.onrender.com/api/contact)
+ *   BACKEND_CONTACT_TIMEOUT_MS  how long to wait for ingest before emailing
+ *                        (default 45000; must stay under the function's
+ *                        maxDuration in vercel.json)
  *   CONTACT_INGEST_TOKEN optional shared secret sent as X-Contact-Token
  *   RESEND_API_KEY       enables the email fallback via Resend
  *   SMTP_HOST            e.g. smtp.gmail.com
@@ -141,14 +144,30 @@ function backendContactUrl() {
 }
 
 /**
+ * How long to wait for the backend ingest before falling back to email.
+ *
+ * The backend runs on Render's free plan, which spins the instance down after
+ * ~15 minutes idle; the next request cold-starts it and can take 30-60s. An
+ * 8s budget (the previous value) aborted every first enquiry after an idle
+ * period, so the visitor got `502 delivery_failed` and nothing was recorded —
+ * the backend was healthy, just not awake yet. The Vercel function is given a
+ * matching `maxDuration` in vercel.json so this wait fits inside its limit.
+ *
+ * Overridable so the value can be tuned without a code change if Render's
+ * cold-start behaviour shifts.
+ */
+const BACKEND_TIMEOUT_MS = Number(process.env.BACKEND_CONTACT_TIMEOUT_MS) || 45000;
+
+/**
  * Send the enquiry to the backend so it is stored and becomes answerable from
  * the admin dashboard. Returns true on success; throws so the caller can fall
- * back to email. A timeout keeps a slow backend from holding the visitor on the
- * "Sending…" button indefinitely.
+ * back to email. The timeout is generous enough to absorb a Render cold start
+ * (see BACKEND_TIMEOUT_MS) but still bounded, so a genuinely dead backend
+ * releases the visitor rather than holding the "Sending…" button forever.
  */
 async function deliverViaBackend({ name, email, phone, topic, message }) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
+  const timer = setTimeout(() => controller.abort(), BACKEND_TIMEOUT_MS);
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (process.env.CONTACT_INGEST_TOKEN) {
