@@ -711,6 +711,73 @@ th, td { text-align: left; padding: 0.85rem var(--sp-4); border-bottom: 1px soli
 thead th { background: var(--surface-2); font-weight: 600; color: var(--ink); white-space: nowrap; }
 tbody tr:last-child td { border-bottom: 0; }
 
+/* ---------------------------------------------------------- calculator --- */
+.calc {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-5);
+  align-items: start;
+}
+.calc__form {
+  display: grid;
+  gap: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6);
+}
+.calc__legend { font-weight: 600; font-size: 0.9375rem; }
+.calc__savings-row { margin-top: var(--sp-1); }
+.calc__savings-row input[type="range"] { width: 100%; accent-color: var(--brand-600); }
+.calc__chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.calc__chip {
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.calc__chip:hover { border-color: var(--brand-600); color: var(--brand-800); }
+.calc__chip[aria-pressed="true"] {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: #fff;
+}
+.calc__out {
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6);
+}
+.calc__amount {
+  font-size: var(--step-4);
+  font-weight: 700;
+  color: var(--brand-800);
+  line-height: 1.1;
+  margin: var(--sp-2) 0 var(--sp-1);
+}
+.calc__rows { display: grid; gap: 0; margin-top: var(--sp-4); }
+.calc__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-4);
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--border);
+}
+.calc__row dt { color: var(--ink-muted); }
+.calc__row dd { font-weight: 600; text-align: right; }
+.calc__row--total dt, .calc__row--total dd { color: var(--brand-800); font-weight: 700; }
+.calc__note { margin-top: var(--sp-4); }
+@media (max-width: 860px) {
+  .calc { grid-template-columns: 1fr; }
+}
+
 /* --------------------------------------------------------------- badges -- */
 .badge {
   display: inline-flex;

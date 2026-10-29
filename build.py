@@ -99,7 +99,7 @@ SHELL_HEAD = """<!DOCTYPE html>
 
       <div class="header__actions">
         <a class="btn btn--ghost" href="/download/">Get the App</a>
-        <a class="btn btn--primary" href="/contact/">Get Started</a>
+        <a class="btn btn--primary" href="/contact/">Talk to us</a>
       </div>
     </div>
   </header>
@@ -126,6 +126,7 @@ SHELL_FOOT = """  </main>
             <li><a href="/products/">Products &amp; Services</a></li>
             <li><a href="/loans/">Loans</a></li>
             <li><a href="/loan-products/">Loan Rates</a></li>
+            <li><a href="/loan-calculator/">Loan Calculator</a></li>
           </ul>
         </div>
         <div>
@@ -150,7 +151,7 @@ SHELL_FOOT = """  </main>
       <div class="footer__bottom">
         <p>&copy; <span data-year>2026</span> Coopvest Africa. All rights reserved.</p>
         <ul>
-          <li><a href="/download/">Get the App</a></li>
+          <li><a href="/download/">Download the app</a></li>
           <li><a href="/contact/">Contact</a></li>
         </ul>
       </div>
@@ -162,8 +163,8 @@ SHELL_FOOT = """  </main>
   </button>
 
   <div class="mobile-cta" role="group" aria-label="Quick actions">
-    <a class="btn btn--ghost" href="/download/">Get the App</a>
-    <a class="btn btn--primary" href="/contact/">Get Started</a>
+    <a class="btn btn--ghost" href="/download/">Download app</a>
+    <a class="btn btn--primary" href="/contact/">Talk to us</a>
   </div>
 
   <script src="/assets/js/site.js" defer></script>

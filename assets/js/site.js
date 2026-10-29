@@ -396,6 +396,108 @@
       .catch(function () { /* keep the static fallback */ });
   }
 
+  /* ------------------------------------------------------ loan calculator */
+  // Flat interest, matching the worked examples on /loan-products/ exactly:
+  // total = amount + (amount x rate); monthly = total / tenure.
+  var LOAN_PRODUCTS = {
+    quick:    { name: "Quick Loan",             rate: 0.075, months: 4,  multiple: 3 },
+    flexi:    { name: "Flexi Loan",             rate: 0.07,  months: 6,  multiple: 3 },
+    stable12: { name: "Stable Loan (12 months)", rate: 0.05, months: 12, multiple: 3 },
+    stable18: { name: "Stable Loan (18 months)", rate: 0.07, months: 18, multiple: 3 },
+    premium:  { name: "Premium Loan",           rate: 0.14,  months: 24, multiple: 4 },
+    maxi:     { name: "Maxi Loan",              rate: 0.19,  months: 36, multiple: 5 }
+  };
+  var LOAN_MIN = 1000;
+
+  function naira(value) {
+    var rounded = Math.round(value);
+    return "\u20a6" + rounded.toLocaleString("en-NG");
+  }
+
+  function initLoanCalculator() {
+    var root = document.querySelector("[data-calc]");
+    if (!root) return;
+
+    var savingsInput = root.querySelector("[data-calc-savings]");
+    var savingsRange = root.querySelector("[data-calc-savings-range]");
+    var field = {
+      amount: root.querySelector("[data-calc-amount]"),
+      productName: root.querySelector("[data-calc-product-name]"),
+      savingsOut: root.querySelector("[data-calc-savings-out]"),
+      limit: root.querySelector("[data-calc-limit]"),
+      interest: root.querySelector("[data-calc-interest]"),
+      total: root.querySelector("[data-calc-total]"),
+      monthly: root.querySelector("[data-calc-monthly]")
+    };
+    var chips = Array.prototype.slice.call(root.querySelectorAll("[data-calc-product]"));
+    var current = "stable12";
+
+    function readSavings() {
+      var value = parseInt(savingsInput.value, 10);
+      if (isNaN(value) || value < 0) value = 0;
+      return value;
+    }
+
+    function render() {
+      var product = LOAN_PRODUCTS[current];
+      var savings = readSavings();
+      var limit = savings * product.multiple;
+      var borrowable = limit >= LOAN_MIN;
+      var amount = borrowable ? limit : 0;
+      var interest = amount * product.rate;
+      var total = amount + interest;
+      var monthly = product.months ? total / product.months : 0;
+
+      if (savingsInput.value !== String(savings)) savingsInput.value = String(savings);
+      if (savingsRange) savingsRange.value = String(Math.min(savings, parseInt(savingsRange.max, 10) || savings));
+
+      field.savingsOut.textContent = naira(savings);
+      field.productName.textContent =
+        product.name + " \u00b7 " + (product.rate * 100).toFixed(1) + "% flat \u00b7 " +
+        product.months + " months";
+
+      if (!borrowable) {
+        field.amount.textContent = "Below the \u20a6" + LOAN_MIN.toLocaleString("en-NG") + " minimum";
+        field.limit.textContent = naira(limit) + " (" + product.multiple + "\u00d7 savings)";
+        field.interest.textContent = "\u2014";
+        field.total.textContent = "\u2014";
+        field.monthly.textContent = "\u2014";
+        return;
+      }
+
+      field.amount.textContent = naira(amount);
+      field.limit.textContent = naira(limit) + " (" + product.multiple + "\u00d7 savings)";
+      field.interest.textContent = naira(interest) + " (" + (product.rate * 100).toFixed(1) + "% flat)";
+      field.total.textContent = naira(total);
+      field.monthly.textContent = naira(monthly) + " over " + product.months + " months";
+    }
+
+    function select(product) {
+      if (!LOAN_PRODUCTS[product]) return;
+      current = product;
+      chips.forEach(function (chip) {
+        chip.setAttribute("aria-pressed", String(chip.getAttribute("data-calc-product") === product));
+      });
+      render();
+    }
+
+    chips.forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        select(chip.getAttribute("data-calc-product"));
+      });
+    });
+
+    savingsInput.addEventListener("input", render);
+    if (savingsRange) {
+      savingsRange.addEventListener("input", function () {
+        savingsInput.value = savingsRange.value;
+        render();
+      });
+    }
+
+    select(current);
+  }
+
   function ready(fn) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fn);
@@ -414,5 +516,6 @@
     initGlassSheen();
     initForms();
     initReleaseInfo();
+    initLoanCalculator();
   });
 })();
