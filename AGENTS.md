@@ -361,3 +361,50 @@ to move together.
 
 The durable fix is to stop the backend idling (a paid Render plan, or a
 keep-alive ping); the timeout only makes the site survive the sleep.
+
+## The canonical domain does not resolve
+
+`build.py` hard-codes `SITE = "https://coopvest.africa"` and every
+`rel="canonical"`, Open Graph `og:url`, `sitemap.xml` entry and `robots.txt`
+Sitemap line points there. As of this writing **`coopvest.africa` does not
+resolve at all** — a public resolver returns NXDOMAIN for both the apex and
+`www`. Only `coopvest-website.vercel.app` is live.
+
+That means every canonical signal points at a dead host, which suppresses the
+site in search. The fix is not in this repo:
+
+1. Point the `coopvest.africa` DNS at Vercel (A `76.76.21.21` or the Vercel
+   nameservers) and add it as a domain on the Vercel project.
+2. Add `www.coopvest.africa` to the same project as a redirect to the apex.
+   `vercel.json` already carries the matching `redirects` rule
+   (`www.coopvest.africa` → `coopvest.africa`, 308), so the redirect is
+   configured in code and only needs the domain attached to activate.
+
+Do not change `SITE` to the `vercel.app` URL to "fix" this. The apex domain is
+the intended canonical host and the one already baked into every generated file;
+changing `SITE` would have to be reverted once DNS is fixed, and would split the
+canonical signal in the meantime.
+
+## The loan calculator
+
+`/loan-calculator/` is a single generated page (`src/pages/loan-calculator.html`)
+with its behaviour in `initLoanCalculator()` in `assets/js/site.js`. It is a
+static page like every other, so the form is real HTML and the page is correct
+without JavaScript: the shipped markup holds the answer for the default inputs
+(₦100,000 savings, Stable 12-month), and the script only updates it.
+
+The product rates, tenures and savings multiples are duplicated in
+`LOAN_PRODUCTS` in `site.js`, separate from the tables in
+`src/pages/loan-products.html`. **If a rate or tenure changes, both must
+change.** The worked examples on the products page are the reference: the
+calculator's arithmetic is the same flat formula
+(`total = amount + amount × rate`, `monthly = total ÷ tenure`), so the two agree
+by construction. A discount (referrals, up to 2%) is deliberately not modelled —
+the estimate is the base-rate figure.
+
+The savings slider is capped at ₦2,000,000 for the slider only; the number input
+accepts more, and the slider clamps to its own maximum when the input exceeds it.
+
+`tools/check_links.py` carries a hard-coded `PAGES` list. Add any new page to it
+or the checker will silently skip that page's links.
+

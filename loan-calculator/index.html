@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loan Calculator | Coopvest Africa</title>
+  <meta name="description" content="Work out what you can borrow from Coopvest Africa. Enter your savings balance, pick a product, and see your limit, the flat interest, the total repayment and the monthly instalment." />
+  <link rel="canonical" href="https://coopvest.africa/loan-calculator/" />
+  <meta name="theme-color" content="#1B5E20" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Coopvest Africa" />
+  <meta property="og:title" content="Loan Calculator | Coopvest Africa" />
+  <meta property="og:description" content="Work out what you can borrow from Coopvest Africa. Enter your savings balance, pick a product, and see your limit, the flat interest, the total repayment and the monthly instalment." />
+  <meta property="og:url" content="https://coopvest.africa/loan-calculator/" />
+  <meta property="og:image" content="https://coopvest.africa/assets/img/og.jpg?v=e65d1ca9d5" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Loan Calculator | Coopvest Africa" />
+  <meta name="twitter:description" content="Work out what you can borrow from Coopvest Africa. Enter your savings balance, pick a product, and see your limit, the flat interest, the total repayment and the monthly instalment." />
+  <meta name="twitter:image" content="https://coopvest.africa/assets/img/og.jpg?v=e65d1ca9d5" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32.png?v=927a98ebce" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/favicon-48.png?v=bb07e96106" />
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png?v=473376cc48" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/site.css?v=ab943a7c45" />
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://coopvest.africa/#organization", "name": "Coopvest Africa", "url": "https://coopvest.africa/", "logo": "https://coopvest.africa/assets/img/icon-512.png?v=6ef8d01023", "description": "A digital cooperative platform helping salaried workers and direct savers save consistently and access affordable financing.", "email": "coopvestafrica@gmail.com", "areaServed": {"@type": "Country", "name": "Nigeria"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://coopvest.africa/"}, {"@type": "ListItem", "position": 2, "name": "Loan Calculator", "item": "https://coopvest.africa/loan-calculator/"}]}]}
+  </script>
+</head>
+<body>
+  <div class="scroll-progress" data-scroll-progress aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="wrap site-header__bar">
+      <a class="brand" href="/">
+        <img class="brand__logo" src="/assets/img/logo.png?v=2c33b3240f" srcset="/assets/img/logo.png?v=2c33b3240f 1x, /assets/img/logo@2x.png?v=ae1da1ba42 2x" width="139" height="96" alt="Coopvest Africa" />
+        <span class="brand__text">
+          <span class="brand__tag">Building Wealth Together</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation menu">
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+      </button>
+
+      <nav class="nav" id="site-nav" data-nav aria-label="Primary">
+        <a href="/about/">About</a>
+        <a href="/how-it-works/">How It Works</a>
+        <a href="/products/">Products</a>
+        <a href="/loans/">Loans</a>
+        <a href="/loan-products/">Loan Rates</a>
+        <a href="/employers/">For Employers</a>
+        <a href="/faqs/">FAQs</a>
+      </nav>
+
+      <div class="header__actions">
+        <a class="btn btn--ghost" href="/download/">Get the App</a>
+        <a class="btn btn--primary" href="/contact/">Talk to us</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+<section class="page-hero">
+      <div class="wrap">
+        <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/loans/">Loans</a></li><li>Loan Calculator</li></ol></nav>
+        <h1>Loan Calculator</h1>
+        <p>Your limit is a multiple of your savings. See what that means in naira before you apply.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Estimate your borrowing</span>
+          <h2>Work out what you can borrow</h2>
+          <p>Enter your savings balance, then pick a product. The figures update as you go. Everything is a flat charge over the whole tenure, so the total shown is the total you repay.</p>
+        </div>
+
+        <div class="calc reveal" data-calc>
+          <div class="calc__form">
+            <div class="field">
+              <label for="calc-savings">Your savings balance (₦)</label>
+              <input type="number" id="calc-savings" name="savings" inputmode="numeric" min="0" step="1000" value="100000" data-calc-savings />
+              <div class="calc__savings-row">
+                <input type="range" min="0" max="2000000" step="1000" value="100000" data-calc-savings-range aria-hidden="true" tabindex="-1" />
+              </div>
+              <span class="hint">Most products allow up to 3× your savings. Premium allows 4× and Maxi 5×. The minimum any member can borrow is ₦1,000.</span>
+            </div>
+
+            <div class="field">
+              <span class="calc__legend" id="calc-product-label">Choose a product</span>
+              <div class="calc__chips" role="group" aria-labelledby="calc-product-label">
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="quick">Quick · 7.5% · 4 months</button>
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="flexi">Flexi · 7.0% · 6 months</button>
+                <button type="button" class="calc__chip" aria-pressed="true" data-calc-product="stable12">Stable · 5.0% · 12 months</button>
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="stable18">Stable · 7.0% · 18 months</button>
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="premium">Premium · 14.0% · 24 months</button>
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="maxi">Maxi · 19.0% · 36 months</button>
+              </div>
+              <span class="hint">Rates and tenures match the <a href="/loan-products/">full product table</a>. Referrals can earn an interest discount of up to 2%.</span>
+            </div>
+          </div>
+
+          <div class="calc__out" data-calc-out aria-live="polite">
+            <span class="eyebrow">Your estimate</span>
+            <p class="calc__amount" data-calc-amount>₦300,000</p>
+            <p class="form-note" data-calc-product-name>Stable Loan (12 months) · 5.0% flat · 12 months</p>
+            <dl class="calc__rows">
+              <div class="calc__row"><dt>Savings balance</dt><dd data-calc-savings-out>₦100,000</dd></div>
+              <div class="calc__row"><dt>Maximum loan</dt><dd data-calc-limit>₦300,000 (3× savings)</dd></div>
+              <div class="calc__row"><dt>Interest</dt><dd data-calc-interest>₦15,000 (5.0% flat)</dd></div>
+              <div class="calc__row calc__row--total"><dt>Total repayment</dt><dd data-calc-total>₦315,000</dd></div>
+              <div class="calc__row"><dt>Monthly repayment</dt><dd data-calc-monthly>₦26,250 over 12 months</dd></div>
+            </dl>
+            <p class="form-note calc__note">Illustrative only. Your exact limit, rate and terms are confirmed when you apply, after identity verification and a six-month contribution history. <a href="/disclosures/">Read the risk disclosures</a>.</p>
+            <div class="btn-row" style="margin-top:var(--sp-5)">
+              <a class="btn btn--primary" href="/contact/">Talk to us about a loan</a>
+              <a class="btn btn--ghost" href="/loan-products/">See all products &amp; rates</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="notice" style="margin-top:var(--sp-6)">
+          <strong>How this is calculated</strong>
+          <p style="color:var(--ink-muted);max-width:none">
+            Interest is a flat percentage of the amount you borrow over the full tenure, not compounding:
+            <strong>total repayment = amount + (amount × rate)</strong>, and
+            <strong>monthly repayment = total repayment ÷ tenure</strong>. The same method is used on the
+            <a href="/loan-products/">loan products page</a>, where every rate and worked example is set out.
+          </p>
+        </div>
+
+        <div class="grid grid--3" style="margin-top:var(--sp-6)">
+          <div class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </span>
+            <h3>Verified membership</h3>
+            <p>Identity verification (KYC) must be complete, and your membership active, before any loan can be approved.</p>
+          </div>
+          <div class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+            </span>
+            <h3>Three guarantors</h3>
+            <p>Each loan requires 3 guarantors. You generate a QR code in the app and each guarantor accepts it in turn.</p>
+          </div>
+          <div class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+            </span>
+            <h3>Savings history</h3>
+            <p>A minimum of six months of consistent contributions, with identity verification complete, before you can apply.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer__grid">
+        <div>
+          <div class="footer__brand">
+            <img class="footer__logo" src="/assets/img/logo-white.png?v=d2a9398a3a" srcset="/assets/img/logo-white.png?v=d2a9398a3a 1x, /assets/img/logo-white@2x.png?v=64ce503f38 2x" width="139" height="96" alt="Coopvest Africa" />
+          </div>
+          <p>A digital cooperative platform helping salaried workers and direct savers save consistently and access affordable financing.</p>
+        </div>
+        <div>
+          <h2>Company</h2>
+          <ul class="footer__links">
+            <li><a href="/about/">About Us</a></li>
+            <li><a href="/how-it-works/">How It Works</a></li>
+            <li><a href="/products/">Products &amp; Services</a></li>
+            <li><a href="/loans/">Loans</a></li>
+            <li><a href="/loan-products/">Loan Rates</a></li>
+            <li><a href="/loan-calculator/">Loan Calculator</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Get involved</h2>
+          <ul class="footer__links">
+            <li><a href="/employers/">For Employers</a></li>
+            <li><a href="/download/">Download the App</a></li>
+            <li><a href="/faqs/">FAQs</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Legal &amp; trust</h2>
+          <ul class="footer__links">
+            <li><a href="/privacy/">Privacy Policy</a></li>
+            <li><a href="/terms/">Terms of Service</a></li>
+            <li><a href="/cookies/">Cookie Policy</a></li>
+            <li><a href="/disclosures/">Risk Disclosures</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p>&copy; <span data-year>2026</span> Coopvest Africa. All rights reserved.</p>
+        <ul>
+          <li><a href="/download/">Download the app</a></li>
+          <li><a href="/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <button class="to-top" data-to-top type="button" aria-label="Back to top" tabindex="-1" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <div class="mobile-cta" role="group" aria-label="Quick actions">
+    <a class="btn btn--ghost" href="/download/">Download app</a>
+    <a class="btn btn--primary" href="/contact/">Talk to us</a>
+  </div>
+
+  <script src="/assets/js/site.js?v=7eb7e83d6f" defer></script>
+</body>
+</html>

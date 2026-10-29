@@ -8,6 +8,14 @@
       "maxDuration": 60
     }
   },
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.coopvest.africa" }],
+      "destination": "https://coopvest.africa/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

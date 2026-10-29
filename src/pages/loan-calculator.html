@@ -1,0 +1,100 @@
+<!--
+title: Loan Calculator | Coopvest Africa
+description: Work out what you can borrow from Coopvest Africa. Enter your savings balance, pick a product, and see your limit, the flat interest, the total repayment and the monthly instalment.
+robots: index, follow
+-->
+    <section class="page-hero">
+      <div class="wrap">
+        <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/loans/">Loans</a></li><li>Loan Calculator</li></ol></nav>
+        <h1>Loan Calculator</h1>
+        <p>Your limit is a multiple of your savings. See what that means in naira before you apply.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Estimate your borrowing</span>
+          <h2>Work out what you can borrow</h2>
+          <p>Enter your savings balance, then pick a product. The figures update as you go. Everything is a flat charge over the whole tenure, so the total shown is the total you repay.</p>
+        </div>
+
+        <div class="calc reveal" data-calc>
+          <div class="calc__form">
+            <div class="field">
+              <label for="calc-savings">Your savings balance (₦)</label>
+              <input type="number" id="calc-savings" name="savings" inputmode="numeric" min="0" step="1000" value="100000" data-calc-savings />
+              <div class="calc__savings-row">
+                <input type="range" min="0" max="2000000" step="1000" value="100000" data-calc-savings-range aria-hidden="true" tabindex="-1" />
+              </div>
+              <span class="hint">Most products allow up to 3× your savings. Premium allows 4× and Maxi 5×. The minimum any member can borrow is ₦1,000.</span>
+            </div>
+
+            <div class="field">
+              <span class="calc__legend" id="calc-product-label">Choose a product</span>
+              <div class="calc__chips" role="group" aria-labelledby="calc-product-label">
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="quick">Quick · 7.5% · 4 months</button>
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="flexi">Flexi · 7.0% · 6 months</button>
+                <button type="button" class="calc__chip" aria-pressed="true" data-calc-product="stable12">Stable · 5.0% · 12 months</button>
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="stable18">Stable · 7.0% · 18 months</button>
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="premium">Premium · 14.0% · 24 months</button>
+                <button type="button" class="calc__chip" aria-pressed="false" data-calc-product="maxi">Maxi · 19.0% · 36 months</button>
+              </div>
+              <span class="hint">Rates and tenures match the <a href="/loan-products/">full product table</a>. Referrals can earn an interest discount of up to 2%.</span>
+            </div>
+          </div>
+
+          <div class="calc__out" data-calc-out aria-live="polite">
+            <span class="eyebrow">Your estimate</span>
+            <p class="calc__amount" data-calc-amount>₦300,000</p>
+            <p class="form-note" data-calc-product-name>Stable Loan (12 months) · 5.0% flat · 12 months</p>
+            <dl class="calc__rows">
+              <div class="calc__row"><dt>Savings balance</dt><dd data-calc-savings-out>₦100,000</dd></div>
+              <div class="calc__row"><dt>Maximum loan</dt><dd data-calc-limit>₦300,000 (3× savings)</dd></div>
+              <div class="calc__row"><dt>Interest</dt><dd data-calc-interest>₦15,000 (5.0% flat)</dd></div>
+              <div class="calc__row calc__row--total"><dt>Total repayment</dt><dd data-calc-total>₦315,000</dd></div>
+              <div class="calc__row"><dt>Monthly repayment</dt><dd data-calc-monthly>₦26,250 over 12 months</dd></div>
+            </dl>
+            <p class="form-note calc__note">Illustrative only. Your exact limit, rate and terms are confirmed when you apply, after identity verification and a six-month contribution history. <a href="/disclosures/">Read the risk disclosures</a>.</p>
+            <div class="btn-row" style="margin-top:var(--sp-5)">
+              <a class="btn btn--primary" href="/contact/">Talk to us about a loan</a>
+              <a class="btn btn--ghost" href="/loan-products/">See all products &amp; rates</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="notice" style="margin-top:var(--sp-6)">
+          <strong>How this is calculated</strong>
+          <p style="color:var(--ink-muted);max-width:none">
+            Interest is a flat percentage of the amount you borrow over the full tenure, not compounding:
+            <strong>total repayment = amount + (amount × rate)</strong>, and
+            <strong>monthly repayment = total repayment ÷ tenure</strong>. The same method is used on the
+            <a href="/loan-products/">loan products page</a>, where every rate and worked example is set out.
+          </p>
+        </div>
+
+        <div class="grid grid--3" style="margin-top:var(--sp-6)">
+          <div class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </span>
+            <h3>Verified membership</h3>
+            <p>Identity verification (KYC) must be complete, and your membership active, before any loan can be approved.</p>
+          </div>
+          <div class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+            </span>
+            <h3>Three guarantors</h3>
+            <p>Each loan requires 3 guarantors. You generate a QR code in the app and each guarantor accepts it in turn.</p>
+          </div>
+          <div class="card reveal">
+            <span class="card__icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+            </span>
+            <h3>Savings history</h3>
+            <p>A minimum of six months of consistent contributions, with identity verification complete, before you can apply.</p>
+          </div>
+        </div>
+      </div>
+    </section>
