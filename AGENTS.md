@@ -102,11 +102,13 @@ Two rules keep that honest:
 `build.py` refuses to build at all if `src/data/fee-schedule.json` is missing or
 carries no charges, so the page cannot ship with the amounts silently absent.
 
-The deploy workflow runs the sync before `vercel build` and **fails** if it
-cannot reach the backend. A stale digest misleads a cautious visitor; a stale
-price is worse, because it is the figure a member uses to decide what they can
-afford. If the fetch fails the deploy stops and the previous, correct deployment
-stays live.
+The deploy workflow runs the sync before `vercel build`. On a **push** it fails
+if it cannot reach the backend: a stale digest misleads a cautious visitor, but a
+stale price is worse, because it is the figure a member uses to decide what they
+can afford. If the fetch fails the deploy stops and the previous, correct
+deployment stays live. On a **pull request** it warns and builds from the
+committed figures instead, so a reviewer can still open the preview; the page is
+something to look at, not a price anyone is charged.
 
 So when a charge changes in `backend/src/config/feeDisclosure.js`, run:
 

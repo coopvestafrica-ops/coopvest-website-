@@ -116,25 +116,46 @@ jobs:
         # The charges page quotes amounts the backend charges. Fetch them here so
         # the deployed page carries the live figures, then rebuild.
         #
-        # Unlike the release fallback above this step is fatal on failure. A stale
-        # digest misleads a cautious visitor; a stale price is a different kind of
-        # harm, because it is the figure a member relies on when deciding what they
-        # can afford. If the backend cannot be reached the deploy stops and the
-        # previous, correct deployment stays live.
+        # On a push this is fatal on failure. A stale digest misleads a cautious
+        # visitor; a stale price is a different kind of harm, because it is the
+        # figure a member relies on when deciding what they can afford. If the
+        # backend cannot be reached the deploy stops and the previous, correct
+        # deployment stays live.
+        #
+        # On a pull request it only warns. A preview is a page to look at, not a
+        # price anyone is charged, and a reviewer needs to see the page - so it
+        # builds from the committed figures instead. The guarantee is kept where
+        # it matters: the push to main still refuses to publish a stale price.
         run: |
-          python3 tools/sync_fee_schedule.py
-          python3 build.py
+          if python3 tools/sync_fee_schedule.py; then
+            python3 build.py
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "::warning::Could not refresh the schedule of charges; this preview shows the last committed figures. The deploy to production will fail until the backend serves /api/v1/fees."
+            python3 build.py
+            exit 0
+          fi
+          echo "::error::Could not refresh the schedule of charges; refusing to deploy a price that may be stale."
+          exit 1
 
       - name: Confirm the committed pages match the deployed data
         # After the refresh above, a diff means the repository's committed output
-        # is behind the amounts actually being charged. Fail rather than deploy,
-        # so the committed tree never lags the published figures.
+        # is behind the amounts actually being charged. Fail rather than deploy on
+        # a push, so the committed tree never lags the published figures; warn on
+        # a pull request, where the failure is for the author to fix before merge.
         run: |
-          if ! git diff --quiet -- src/data/fee-schedule.json charges/; then
-            echo "::error::The schedule of charges changed during deploy. Run 'python3 tools/sync_fee_schedule.py && python3 build.py' and commit the result."
-            git --no-pager diff --stat -- src/data/fee-schedule.json charges/
-            exit 1
+          if git diff --quiet -- src/data/fee-schedule.json charges/; then
+            exit 0
           fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "::warning::The committed schedule of charges is behind the backend. Run 'python3 tools/sync_fee_schedule.py && python3 build.py' and commit the result."
+            git --no-pager diff --stat -- src/data/fee-schedule.json charges/
+            exit 0
+          fi
+          echo "::error::The committed schedule of charges is behind the backend. Run 'python3 tools/sync_fee_schedule.py && python3 build.py' and commit the result."
+          git --no-pager diff --stat -- src/data/fee-schedule.json charges/
+          exit 1
 
       - name: Build project artifacts
         run: vercel build ${{ github.event_name != 'pull_request' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
