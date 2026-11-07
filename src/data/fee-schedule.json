@@ -1,0 +1,82 @@
+{
+  "schedule_hash": "4a587f939f03a716",
+  "version": "2026-11-03",
+  "currency": "NGN",
+  "charges": [
+    {
+      "id": "registration_fee",
+      "label": "Registration fee",
+      "amount": 5000,
+      "frequency": "one-time",
+      "refundable": false,
+      "note": "Added to your first monthly contribution. Where an employer deducts contributions at source, it is recovered through that deduction instead."
+    },
+    {
+      "id": "monthly_contribution",
+      "label": "Minimum monthly contribution",
+      "amount": 5000,
+      "frequency": "monthly",
+      "refundable": null,
+      "note": "Your own money, held in your savings. It is not a charge."
+    },
+    {
+      "id": "administrative_fee",
+      "label": "Monthly administrative fee",
+      "amount": 1500,
+      "frequency": "monthly",
+      "refundable": null,
+      "components": [
+        {
+          "name": "AGM levy",
+          "amount": 1000
+        },
+        {
+          "name": "Development levy",
+          "amount": 500
+        }
+      ],
+      "note": "Recovered from your contribution, or from salary where an employer deducts contributions."
+    },
+    {
+      "id": "late_repayment_fine",
+      "label": "Late repayment fine",
+      "amount": 3000,
+      "frequency": "per occurrence",
+      "refundable": null,
+      "trigger": "Two consecutive missed monthly repayments",
+      "note": "Recorded as a separate obligation. It is not added to your loan balance."
+    }
+  ],
+  "loan_interest_rates": [
+    {
+      "product": "Quick Loan",
+      "rate": 7.5
+    },
+    {
+      "product": "Flexi Loan",
+      "rate": 7
+    },
+    {
+      "product": "Stable Loan (12 months)",
+      "rate": 5
+    },
+    {
+      "product": "Stable Loan (18 months)",
+      "rate": 7
+    },
+    {
+      "product": "Premium Loan",
+      "rate": 14
+    },
+    {
+      "product": "Maxi Loan",
+      "rate": 19
+    }
+  ],
+  "not_charged": [
+    "Withdrawal fee",
+    "Early-repayment penalty",
+    "Loan application or processing fee",
+    "Account-maintenance charge beyond the monthly administrative fee"
+  ]
+}

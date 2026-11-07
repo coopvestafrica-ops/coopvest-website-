@@ -13,6 +13,8 @@ generated HTML is committed, so a static host can serve the repo as-is.
 ```bash
 python3 build.py            # regenerate all HTML + sitemap.xml  (npm run build)
 python3 tools/check_links.py <base-url>   # needs a running server
+python3 tools/sync_fee_schedule.py        # refresh the charges page figures
+python3 tools/check_charges.py            # assert the charges page quotes no amount of its own
 npm test                    # contact-form, APK download and release-info tests
 ```
 
@@ -69,6 +71,50 @@ now rewrites them from the live release, and the deploy workflow runs it (then
 values. Run it after publishing a new APK; `--check` fails if the fallback is
 stale. It derives the values with the same regexes as `api/release-info.js`, so
 the static and runtime paths cannot disagree.
+
+## The Schedule of Charges
+
+`/charges/` publishes every charge the cooperative applies: the registration fee,
+the minimum monthly contribution, the monthly administrative fee and its levies,
+the late repayment fine, the interest rate on each loan product, and the charges
+that explicitly do **not** apply.
+
+None of those figures are written in this repository. They come from
+`GET /api/v1/fees` on the backend, which derives them from
+`backend/src/config/feeDisclosure.js` — the same module the routes that levy a
+charge import. `tools/sync_fee_schedule.py` fetches the response into
+`src/data/fee-schedule.json`, and `build.py` renders the tables from that file
+through the `{{FEE_TABLE}}`, `{{INTEREST_TABLE}}`, `{{NOT_CHARGED}}` and
+`{{FEE_VERSION}}` tokens in `src/pages/charges.html`.
+
+Two rules keep that honest:
+
+- **`build.py` never calls the network.** It runs offline in the Verify job and
+  its output is committed, so a fetch inside it would make CI depend on the
+  backend being up and would let the committed pages change without a commit.
+  That is why the fetch lives in `tools/sync_fee_schedule.py`, the same split as
+  the release fallback above.
+- **The page may not contain a naira figure.** `tools/check_charges.py` fails the
+  build if it finds one, and also if a token is missing. A hand-typed amount is
+  the failure this whole arrangement exists to prevent: it would sit on the page
+  unchanged while the backend moved on, and a member would rely on it.
+
+`build.py` refuses to build at all if `src/data/fee-schedule.json` is missing or
+carries no charges, so the page cannot ship with the amounts silently absent.
+
+The deploy workflow runs the sync before `vercel build` and **fails** if it
+cannot reach the backend. A stale digest misleads a cautious visitor; a stale
+price is worse, because it is the figure a member uses to decide what they can
+afford. If the fetch fails the deploy stops and the previous, correct deployment
+stays live.
+
+So when a charge changes in `backend/src/config/feeDisclosure.js`, run:
+
+```bash
+python3 tools/sync_fee_schedule.py && python3 build.py
+```
+
+and commit both the data file and the rebuilt pages.
 
 ## Photography
 

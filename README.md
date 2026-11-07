@@ -50,6 +50,11 @@ keep the three sources aligned:
 | `backend/src/lib/loanPolicy.js` | savings multipliers, blocking statuses |
 | `backend/src/services/referralService.js` | base rates, referral discounts, repayment maths |
 
+The **interest rates on the `/charges/` page are not edited here at all** — they
+are generated from `GET /api/v1/fees`, which reads the same rates the backend
+charges. See "The Schedule of Charges" in `AGENTS.md`. To change what that page
+shows, change the backend and re-run `tools/sync_fee_schedule.py`.
+
 Current products (rate, tenure, savings multiple):
 
 | Product | Rate | Tenure | Limit |

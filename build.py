@@ -22,6 +22,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).parent
 PAGES_DIR = ROOT / "src" / "pages"
+FEE_DATA = ROOT / "src" / "data" / "fee-schedule.json"
 SITE = "https://coopvest.africa"
 
 # The brand node every page carries. Kept here rather than duplicated into each
@@ -140,6 +141,7 @@ SHELL_FOOT = """  </main>
         <div>
           <h2>Legal &amp; trust</h2>
           <ul class="footer__links">
+            <li><a href="/charges/">Schedule of Charges</a></li>
             <li><a href="/privacy/">Privacy Policy</a></li>
             <li><a href="/terms/">Terms of Service</a></li>
             <li><a href="/cookies/">Cookie Policy</a></li>
@@ -345,16 +347,122 @@ def structured_data(slug: str, url_path: str, meta: dict[str, str], body: str) -
     )
 
 
+def load_fee_schedule() -> dict:
+    """Read the fee data the charges page is built from.
+
+    The file is written by `tools/sync_fee_schedule.py`, which fetches it from the
+    backend's `/api/v1/fees`. It is deliberately not fetched here: this script has
+    to run offline in CI and produce byte-identical output, or the Verify job's
+    "generated pages are committed" check fails on every push.
+
+    A missing file is a hard failure rather than a fallback, because the failure
+    mode of a fallback is a charges page that silently omits a charge.
+    """
+    if not FEE_DATA.is_file():
+        raise SystemExit(
+            f"{FEE_DATA.relative_to(ROOT)} is missing; run "
+            f"'python3 tools/sync_fee_schedule.py' to fetch it from the backend"
+        )
+    try:
+        data = json.loads(FEE_DATA.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"{FEE_DATA.relative_to(ROOT)} is not valid JSON: {exc}") from exc
+
+    charges = data.get("charges")
+    if not isinstance(charges, list) or not charges:
+        raise SystemExit(f"{FEE_DATA.relative_to(ROOT)} carries no charges; refusing to build a charges page")
+    return data
+
+
+def naira(amount: float) -> str:
+    """Format an amount the way the app writes it: ₦5,000, not ₦5000."""
+    return "₦" + f"{int(amount):,}"
+
+
+def fee_rows(data: dict) -> str:
+    """Render the charge table body from the schedule.
+
+    Every figure comes from the data file. Nothing is written into the markup by
+    hand, which is the point: a page assembled from a constant could quote a
+    number the backend does not charge.
+    """
+    rows = []
+    for charge in data["charges"]:
+        when = charge.get("trigger") or charge.get("note", "")
+        amount = naira(charge["amount"])
+        # A component breakdown belongs beside the amount, not in a footnote.
+        components = charge.get("components") or []
+        if components:
+            detail = ", ".join(f"{c['name']} {naira(c['amount'])}" for c in components)
+            amount = f"{amount}<br /><span class=\"table-note\">Made up of {detail}</span>"
+        rows.append(
+            "              <tr>\n"
+            f"                <th scope=\"row\">{html.escape(charge['label'])}</th>\n"
+            f"                <td>{amount}</td>\n"
+            f"                <td>{html.escape(charge.get('frequency', ''))}</td>\n"
+            f"                <td>{html.escape(when)}</td>\n"
+            "              </tr>"
+        )
+    return "\n".join(rows)
+
+
+def interest_rows(data: dict) -> str:
+    rows = []
+    for entry in data.get("loan_interest_rates", []):
+        rate = entry["rate"]
+        # 7.0 should read "7%", 7.5 should read "7.5%".
+        shown = f"{rate:g}"
+        rows.append(
+            "              <tr>\n"
+            f"                <th scope=\"row\">{html.escape(entry['product'])}</th>\n"
+            f"                <td>{shown}%</td>\n"
+            "              </tr>"
+        )
+    return "\n".join(rows)
+
+
+def not_charged_items(data: dict) -> str:
+    return "\n".join(
+        f"          <li>{html.escape(item)}</li>" for item in data.get("not_charged", [])
+    )
+
+
+def apply_fee_placeholders(body: str, data: dict) -> str:
+    """Substitute the fee tokens in a page body.
+
+    A page that carries none of the tokens is returned untouched, so only the
+    charges page is affected.
+    """
+    if "{{" not in body:
+        return body
+    rendered = (
+        body.replace("{{FEE_VERSION}}", html.escape(str(data.get("version", ""))))
+        .replace("{{FEE_TABLE}}", fee_rows(data))
+        .replace("{{INTEREST_TABLE}}", interest_rows(data))
+        .replace("{{NOT_CHARGED}}", not_charged_items(data))
+    )
+    # A mistyped token would otherwise be served verbatim to a visitor.
+    leftover = re.findall(r"\{\{[A-Z_]+\}\}", rendered)
+    if leftover:
+        raise SystemExit(f"unreplaced token(s) in a page partial: {', '.join(sorted(set(leftover)))}")
+    return rendered
+
+
 def build() -> None:
     partials = sorted(PAGES_DIR.glob("*.html"))
     if not partials:
         raise SystemExit(f"No page partials found in {PAGES_DIR}")
+
+    # Loaded once, before any page is written, so a malformed schedule stops the
+    # build rather than producing a page with the amounts missing.
+    fee_data = load_fee_schedule()
 
     written: list[str] = []
     urls: list[tuple[str, bool]] = []
     for partial in partials:
         slug = partial.stem
         meta, body = parse_partial(partial.read_text(encoding="utf-8"))
+        body = apply_fee_placeholders(body, fee_data)
 
         if slug == "home":
             out_path = ROOT / "index.html"
@@ -400,6 +508,17 @@ def build() -> None:
     # mismatch silently rejects every enquiry. Fail the build instead.
     result = subprocess.run(
         [sys.executable, str(ROOT / "tools" / "check_topics.py")],
+        capture_output=True,
+        text=True,
+    )
+    print(" ", result.stdout.strip())
+    if result.returncode != 0:
+        raise SystemExit(result.stdout + result.stderr)
+
+    # The charges page must take every figure from the generated data, so a
+    # hand-typed amount cannot sit on the page while the backend moves on.
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "check_charges.py")],
         capture_output=True,
         text=True,
     )
