@@ -1,6 +1,6 @@
 {
-  "schedule_hash": "4a587f939f03a716",
-  "version": "2026-11-03",
+  "schedule_hash": "756b10f88f30b4fc",
+  "version": "2026-11-08",
   "currency": "NGN",
   "charges": [
     {
@@ -9,7 +9,7 @@
       "amount": 5000,
       "frequency": "one-time",
       "refundable": false,
-      "note": "Added to your first monthly contribution. Where an employer deducts contributions at source, it is recovered through that deduction instead."
+      "note": "A charge payable to the cooperative. Where an employer deducts contributions at source, it is recovered through that deduction instead."
     },
     {
       "id": "monthly_contribution",
@@ -27,7 +27,7 @@
       "refundable": null,
       "components": [
         {
-          "name": "AGM levy",
+          "name": "Administrative charges",
           "amount": 1000
         },
         {
